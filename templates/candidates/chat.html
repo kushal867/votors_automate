@@ -1,0 +1,282 @@
+{% extends 'base.html' %}
+
+{% block title %}Intelligence Headquarters | Voter Vision AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-layout {
+        display: grid;
+        grid-template-columns: 450px 1fr;
+        gap: 2rem;
+        height: calc(100vh - var(--nav-height) - 4rem);
+    }
+
+    .chat-card {
+        display: flex;
+        flex-direction: column;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .chat-header {
+        padding: 1.5rem 2.5rem;
+        background: rgba(255,255,255,0.02);
+        border-bottom: 1px solid var(--glass-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) transparent;
+    }
+
+    .message {
+        max-width: 85%;
+        padding: 1.1rem 1.5rem;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        position: relative;
+        animation: messageReveal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    }
+
+    @keyframes messageReveal {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-user {
+        align-self: flex-end;
+        background: var(--primary);
+        color: white;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+    }
+
+    .message-ai {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-main);
+        border-bottom-left-radius: 4px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .chat-input-wrapper {
+        padding: 1.5rem 2rem;
+        background: rgba(255,255,255,0.02);
+        border-top: 1px solid var(--glass-border);
+    }
+
+    .chat-input-area {
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem 1.25rem;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 14px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .chat-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: white;
+        padding: 0.5rem 0;
+        font-size: 1rem;
+        outline: none;
+    }
+
+    .typing-indicator {
+        font-size: 0.85rem;
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: none;
+        padding-left: 2rem;
+    }
+
+    /* Map Styles */
+    .pulse-point {
+        position: absolute;
+        width: 12px;
+        height: 12px;
+        background: var(--primary);
+        border-radius: 50%;
+        box-shadow: 0 0 20px var(--primary);
+        animation: pulseMap 1.5s infinite;
+    }
+
+    @keyframes pulseMap {
+        0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+        70% { transform: scale(3); opacity: 0; box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+        100% { transform: scale(1); opacity: 0; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    }
+
+    /* Markdown Styling */
+    .message-ai h1, .message-ai h2, .message-ai h3 { color: var(--primary); font-size: 1.05rem; margin: 0.75rem 0 0.25rem; }
+    .message-ai ul, .message-ai ol { margin-left: 1.2rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-layout reveal">
+    <!-- Left Panel: Strategic Assets -->
+    <div style="display: flex; flex-direction: column; gap: 2rem;">
+        <div class="premium-card" style="flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--glass-border); background: rgba(255,255,255,0.02);">
+                <h3 style="margin: 0; font-size: 0.8rem; color: var(--primary); letter-spacing: 2px; text-transform: uppercase;">Strategic Geography</h3>
+            </div>
+            
+            <div style="flex: 1; position: relative; background: #010413; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                <img src="/static/images/nepal_map.png" alt="Nepal Strategic Map" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
+                <div style="position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, rgba(2, 6, 23, 0.9) 100%);"></div>
+                
+                <!-- Simulated Strategic Nodes -->
+                <div class="pulse-point" style="top: 50%; left: 45%;"></div>
+                <div class="pulse-point" style="top: 45%; left: 25%; animation-delay: 0.5s;"></div>
+                <div class="pulse-point" style="top: 60%; left: 75%; animation-delay: 1s;"></div>
+            </div>
+
+            <div style="padding: 1.5rem; background: rgba(0,0,0,0.4); font-size: 0.8rem; border-top: 1px solid var(--glass-border);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                    <span style="color: var(--text-dim);">Candidate Density</span>
+                    <span style="color: var(--primary);">HIGH RESPONSE</span>
+                </div>
+                <div style="width: 100%; height: 4px; background: var(--glass-border); border-radius: 10px; overflow: hidden;">
+                    <div style="width: 82%; height: 100%; background: linear-gradient(to right, var(--primary), var(--secondary)); box-shadow: 0 0 10px var(--primary);"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="premium-card" style="padding: 1.25rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="width: 48px; height: 48px; background: rgba(220, 20, 60, 0.1); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem;">🇳🇵</div>
+                <div>
+                    <h4 style="margin: 0; font-size: 0.95rem; color: white;">Voter Vision Nepal AI</h4>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-dim);">Federal Democracy Engine v4.0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel: Intelligence Stream -->
+    <div class="premium-card chat-card">
+        <div class="chat-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent);"></div>
+                <div>
+                    <h3 style="margin-bottom: 0; font-size: 0.9rem; color: white;">Analysis Stream</h3>
+                    <p style="font-size: 0.7rem; margin-bottom: 0; color: var(--text-dim);">Connected to Federal Archives</p>
+                </div>
+            </div>
+            <div class="badge badge-primary" style="font-size: 0.65rem;">ENCRYPTED</div>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message message-ai">
+                <p><strong>Namaste! 🙏</strong></p>
+                <p>Establishing connection to the <strong>Nepal Election Intelligence Core</strong>. I have mapped currently listed candidates and analyzed their Ghosada Patra (Manifestos).</p>
+                <p>How can I assist your civic participation today?</p>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <span style="animation: pulse 1s infinite;">●</span> Processing data stream...
+        </div>
+
+        <div class="chat-input-wrapper">
+            <div class="chat-input-area">
+                <input type="text" id="userInput" class="chat-input" placeholder="Query candidate positions or request comparisons..." onkeypress="handleKeyPress(event)">
+                <button class="btn-modern btn-fill" onclick="sendMessage()" style="padding: 8px 16px;">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                </button>
+            </div>
+            <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 1rem; text-align: center;">
+                BETA: Neutral AI analysis for informational purposes only. Jayanepal.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    async function sendMessage() {
+        const query = userInput.value.trim();
+        if (!query) return;
+
+        appendMessage(query, 'user');
+        userInput.value = '';
+        
+        typingIndicator.style.display = 'block';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch("{% url 'chat' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            const data = await response.json();
+            typingIndicator.style.display = 'none';
+            appendMessage(data.response, 'ai');
+        } catch (error) {
+            typingIndicator.style.display = 'none';
+            appendMessage("Signal lost. Re-establishing link...", 'ai');
+        }
+    }
+
+    function appendMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = `message message-${sender}`;
+        
+        if (sender === 'ai') {
+            div.innerHTML = formatAIResponse(text);
+        } else {
+            div.textContent = text;
+        }
+        
+        chatMessages.appendChild(div);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    }
+
+    function formatAIResponse(text) {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>')
+            .replace(/### (.*?)$/gm, '<h3>$1</h3>')
+            .replace(/## (.*?)$/gm, '<h2>$1</h2>')
+            .replace(/# (.*?)$/gm, '<h1>$1</h1>');
+    }
+</script>
+
+<style>
+    @keyframes pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+    }
+</style>
+{% endblock %}

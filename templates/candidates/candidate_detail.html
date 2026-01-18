@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ candidate.name }} - Intelligence Report | Voter Vision AI{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 350px 1fr; gap: 3rem; align-items: start;">
+    <!-- Profile Sidebar -->
+    <aside style="position: sticky; top: calc(var(--nav-height) + 2rem);">
+        <div class="premium-card" style="padding: 1.5rem;">
+            <div style="width: 100%; height: 350px; border-radius: 16px; overflow: hidden; margin-bottom: 2rem; border: 1px solid var(--glass-border);">
+                {% if candidate.image %}
+                    <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-dark), var(--primary));"></div>
+                {% endif %}
+            </div>
+            
+            <h1 style="font-size: 1.8rem; margin-bottom: 0.5rem; letter-spacing: -1px; color: white;">{{ candidate.name }}</h1>
+            <div class="badge badge-primary" style="margin-bottom: 1.5rem;">{{ candidate.party }}</div>
+            
+            <div style="margin-bottom: 2rem;">
+                <h3 style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.75rem;">Biography</h3>
+                <p style="font-size: 0.9rem; line-height: 1.7;">{{ candidate.bio }}</p>
+            </div>
+            
+            <a href="{% url 'upload-manifesto' candidate.id %}" class="btn-modern btn-fill" style="width: 100%; justify-content: center;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Upload Manifesto
+            </a>
+        </div>
+    </aside>
+
+    <!-- Analysis Main -->
+    <div style="display: flex; flex-direction: column; gap: 2.5rem;">
+        <!-- AI Past Work Analysis -->
+        <div class="premium-card">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem;">
+                <div style="padding: 10px; background: rgba(244, 63, 94, 0.1); border-radius: 12px; color: var(--secondary);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                </div>
+                <h2 style="margin-bottom: 0; color: white;">Candidate Integrity & Track Record</h2>
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 2rem; border-radius: 16px; border: 1px solid var(--glass-border);">
+                <div style="font-size: 1.05rem; line-height: 1.8; color: var(--text-main);">
+                    {% if candidate.ai_work_analysis %}
+                        {{ candidate.ai_work_analysis|linebreaks }}
+                    {% else %}
+                        <p style="color: var(--text-dim); font-style: italic;">No deep analysis available for this candidate yet. Request an intelligence update via chat.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Manifestos -->
+        <div>
+            <h2 style="margin-bottom: 2rem; display: flex; align-items: center; gap: 12px; color: white;">
+                <span style="color: var(--primary);">#</span> Vision Analysis (Ghosada Patra)
+            </h2>
+            
+            {% for manifesto in manifestos %}
+            <div class="premium-card" style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <div class="badge badge-primary">MANIFESTO v{{ forloop.revcounter }}</div>
+                    <span style="font-size: 0.8rem; color: var(--text-dim);">UPLOADED: {{ manifesto.uploaded_at|date:"M d, Y" }}</span>
+                </div>
+                
+                <div style="background: rgba(99, 102, 241, 0.05); padding: 2rem; border-radius: 16px; border-left: 4px solid var(--primary);">
+                    <div style="font-size: 1.05rem; line-height: 1.8; color: var(--text-main);">
+                        {{ manifesto.ai_vision_analysis|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if manifesto.pdf %}
+                <div style="margin-top: 2rem; text-align: right;">
+                    <a href="{{ manifesto.pdf.url }}" target="_blank" class="btn-modern btn-outline" style="font-size: 0.8rem;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        View Original PDF
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="premium-card" style="text-align: center; padding: 4rem;">
+                <p style="color: var(--text-dim);">The vision documents for this candidate are currently missing from our intelligence database.</p>
+                <a href="{% url 'upload-manifesto' candidate.id %}" class="btn-modern btn-fill" style="margin-top: 1.5rem;">Add Vision Document</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Register Candidate | Voter Vision AI{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="premium-card">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <div class="badge badge-primary" style="margin-bottom: 1rem;">NEW ENTRY</div>
+            <h1 class="gradient-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">Register Leader</h1>
+            <p>Input candidate data for deep AI analysis and public record verification.</p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Full Name</label>
+                    <input type="text" name="name" required placeholder="e.g. KP Sharma Oli" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Political Party</label>
+                    <input type="text" name="party" required placeholder="e.g. CPN-UML" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Biometric Profile (Image)</label>
+                <div style="position: relative; overflow: hidden;">
+                    <input type="file" name="image" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Brief Biography</label>
+                <textarea name="bio" required rows="3" placeholder="Brief political career overview..." style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; resize: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'"></textarea>
+            </div>
+
+            <div style="margin-bottom: 2.5rem;">
+                <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Past Records & Achievements (Target for AI Engine)</label>
+                <textarea name="past_work" required rows="5" placeholder="Detail past positions, completed projects, and public record data..." style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'"></textarea>
+                <p style="font-size: 0.75rem; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">⚡ AI will automatically generate an integrity profile based on this input.</p>
+            </div>
+
+            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
+                <a href="{% url 'candidate-list' %}" class="btn-modern btn-outline" style="flex: 1; justify-content: center;">Abort</a>
+                <button type="submit" class="btn-modern btn-fill" style="flex: 2; justify-content: center;">Initialize AI Analysis</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

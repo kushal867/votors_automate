@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Comparative Intelligence | Voter Vision AI{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 4rem;">
+    <div class="badge badge-primary" style="margin-bottom: 1rem;">STRATEGIC COMPARISON</div>
+    <h1 class="gradient-text" style="font-size: 3rem;">Vision Differentiation</h1>
+    <p>Objective side-by-side analysis of candidate goals and historical performance.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2.5rem; margin-bottom: 4rem;">
+    {% for candidate in candidates %}
+    <div class="premium-card" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <div style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; margin-bottom: 1.5rem; border: 4px solid var(--primary); box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);">
+            {% if candidate.image %}
+                <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--bg-dark), var(--primary));"></div>
+            {% endif %}
+        </div>
+        
+        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem; color: white;">{{ candidate.name }}</h2>
+        <div class="badge badge-primary" style="margin-bottom: 2rem;">{{ candidate.party }}</div>
+
+        <div style="width: 100%; text-align: left;">
+            <h3 style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">Core Manifesto Points</h3>
+            {% with manifesto=candidate.manifestos.last %}
+            {% if manifesto %}
+                <div style="font-size: 0.95rem; line-height: 1.7; color: var(--text-main); background: rgba(0,0,0,0.3); padding: 1.5rem; border-radius: 16px; border: 1px solid var(--glass-border);">
+                    {{ manifesto.ai_vision_analysis|truncatewords:100|linebreaks }}
+                </div>
+            {% else %}
+                <p style="color: var(--text-dim); font-style: italic; text-align: center;">No Vision Document Uploaded</p>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if ai_comparison %}
+<div class="premium-card" style="border-left: 4px solid var(--secondary); background: rgba(244, 63, 94, 0.05);">
+    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 2rem;">
+        <div style="padding: 12px; background: rgba(244, 63, 94, 0.2); border-radius: 12px; color: var(--secondary);">
+            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+        </div>
+        <h2 style="margin-bottom: 0; color: white;">AI Comparative Synthesis</h2>
+    </div>
+    
+    <div style="font-size: 1.1rem; line-height: 1.9; color: var(--text-main); text-align: justify;">
+        {{ ai_comparison|linebreaks }}
+    </div>
+</div>
+{% endif %}
+
+<div style="text-align: center; margin-top: 5rem;">
+    <a href="{% url 'candidate-list' %}" class="btn-modern btn-outline">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        Return to Intelligence Database
+    </a>
+</div>
+{% endblock %}

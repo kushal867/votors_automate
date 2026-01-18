@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Explore Candidates | Voter Vision AI{% endblock %}
+
+{% block content %}
+<div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem;">
+    <div>
+        <div class="badge badge-primary" style="margin-bottom: 1rem;">DATABASE v2.0</div>
+        <h1 class="gradient-text" style="margin-bottom: 0;">Election Candidates</h1>
+        <p>Monitor and analyze the leadership profiles of candidates across all provinces of Nepal.</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <button onclick="document.getElementById('compareForm').submit()" class="btn-modern btn-outline">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            Compare Selected
+        </button>
+        <a href="{% url 'candidate-add' %}" class="btn-modern btn-fill">Register New</a>
+    </div>
+</div>
+
+<form id="compareForm" action="{% url 'compare-candidates' %}" method="get">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 2rem;">
+        {% for candidate in candidates %}
+        <div class="premium-card" style="padding: 0; display: flex; flex-direction: column;">
+            <div style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 10; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 50%; border: 1px solid var(--glass-border); display: flex;">
+                <input type="checkbox" name="compare" value="{{ candidate.id }}" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary);">
+            </div>
+            
+            <div style="height: 240px; overflow: hidden; position: relative;">
+                {% if candidate.image %}
+                    <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s;">
+                {% else %}
+                    <div style="width: 100%; height: 100%; background: linear-gradient(45deg, var(--bg-dark), var(--primary-bg));"></div>
+                {% endif %}
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 1.5rem; background: linear-gradient(to top, rgba(2, 6, 23, 1), transparent);">
+                    <div class="badge badge-primary" style="background: var(--primary); color: white; border: none;">{{ candidate.party }}</div>
+                </div>
+            </div>
+
+            <div style="padding: 2rem; flex: 1; display: flex; flex-direction: column;">
+                <h2 style="font-size: 1.6rem; margin-bottom: 0.5rem; letter-spacing: -0.5px; color: white;">{{ candidate.name }}</h2>
+                <p style="font-size: 0.95rem; color: var(--text-dim); margin-bottom: 1.5rem; flex: 1;">
+                    {{ candidate.bio|truncatewords:20 }}
+                </p>
+                <div style="display: flex; gap: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1.5rem;">
+                    <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline" style="flex: 1; justify-content: center;">Profile</a>
+                    <a href="{% url 'upload-manifesto' candidate.id %}" class="btn-modern btn-fill" style="flex: 1.5; justify-content: center; font-size: 0.8rem; background: var(--secondary); box-shadow: 0 4px 15px rgba(244, 63, 94, 0.3);">Upload Manifesto</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="premium-card" style="grid-column: 1 / -1; text-align: center; padding: 6rem 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.2;">🔍</div>
+            <h2 style="margin-bottom: 0.5rem;">No Profiles Detected</h2>
+            <p>Ready to analyze the next leader of Nepal? Start by registering a candidate.</p>
+            <a href="{% url 'candidate-add' %}" class="btn-modern btn-fill" style="margin-top: 2rem;">Register First Candidate</a>
+        </div>
+        {% endfor %}
+    </div>
+</form>
+
+<style>
+    .premium-card:hover img {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
