@@ -1,11 +1,23 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView
 from django.urls import reverse_lazy
-from .models import Candidate, Manifesto
 from django.contrib import messages
 from django.http import JsonResponse
-from .utils import analyze_candidate_data, analyze_manifesto_vision, extract_text_from_pdf, get_chatbot_response
 import json
+import logging
+
+from .models import Candidate, Manifesto
+from .utils import (
+    analyze_candidate_data, 
+    analyze_manifesto_vision, 
+    extract_text_from_pdf, 
+    get_chatbot_response,
+    get_ai_response,
+    analyze_multiple_manifestos
+)
+from .services import get_relevant_context, process_manifesto_upload
+
+logger = logging.getLogger(__name__)
 
 class CandidateListView(ListView):
     model = Candidate
@@ -30,8 +42,11 @@ class CandidateCreateView(CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.object.ai_work_analysis = analyze_candidate_data(self.object)
-        self.object.save()
+        try:
+            self.object.ai_work_analysis = analyze_candidate_data(self.object)
+            self.object.save()
+        except Exception as e:
+            logger.error(f"Error analyzing candidate data: {e}")
         return response
 
 def upload_manifesto(request, candidate_id):
@@ -39,106 +54,69 @@ def upload_manifesto(request, candidate_id):
     if request.method == 'POST':
         pdf_file = request.FILES.get('pdf_file')
         if pdf_file:
-            manifesto = Manifesto.objects.create(candidate=candidate, pdf_file=pdf_file)
-            text = extract_text_from_pdf(pdf_file)
-            analysis_raw = analyze_manifesto_vision(text, candidate.name)
-            
-            # Attempt to parse JSON if AI followed instructions
             try:
-                import json
-                # Strip markdown blocks if present
-                clean_json = analysis_raw.strip()
-                if clean_json.startswith('```json'):
-                    clean_json = clean_json.split('```json')[1].split('```')[0].strip()
-                elif clean_json.startswith('```'):
-                    clean_json = clean_json.split('```')[1].split('```')[0].strip()
-                    
-                data = json.loads(clean_json)
-                manifesto.vision_summary = data.get('summary', text[:500])
-                manifesto.key_promises = data.get('promises', '')
-                manifesto.ai_vision_analysis = data.get('full_analysis', analysis_raw)
-            except:
-                # Fallback to saving everything in analysis field
-                manifesto.vision_summary = text[:500]
-                manifesto.ai_vision_analysis = analysis_raw
-            
-            manifesto.save()
-            messages.success(request, f"Manifesto uploaded and analyzed for {candidate.name}")
-            return redirect('candidate-detail', pk=candidate.id)
+                manifesto = Manifesto.objects.create(candidate=candidate, pdf_file=pdf_file)
+                text = extract_text_from_pdf(pdf_file)
+                analysis_raw = analyze_manifesto_vision(text, candidate.name)
+                
+                # Use service to process and save
+                process_manifesto_upload(manifesto, analysis_raw, text)
+                
+                messages.success(request, f"Manifesto for {candidate.name} uploaded and intelligence report generated.")
+                return redirect('candidate-detail', pk=candidate.id)
+            except Exception as e:
+                logger.error(f"Upload/Analysis Error: {e}")
+                messages.error(request, f"Error processing manifesto: {str(e)}")
+                
     return render(request, 'candidates/upload_manifesto.html', {'candidate': candidate})
 
 def chat_view(request):
+    """
+    Main AI Chat interface for Voter Vision.
+    """
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            user_query = data.get('query', '')
+            user_query = data.get('query', '').strip()
             
-            # 1. Gather relevant local context (Optimization: Prefetch manifestos and filter if possible)
-            # For now, we prefetch to avoid N+1 queries. 
-            # In a larger app, we'd use search to find only RELEVANT candidates.
-            candidates = Candidate.objects.prefetch_related('manifestos').all()
-            
-            # Simple keyword matching to narrow down context if query mentions a candidate or party
-            relevant_candidates = []
-            query_lower = user_query.lower()
-            for c in candidates:
-                if (c.name.lower() in query_lower or 
-                    c.party.lower() in query_lower or 
-                    len(candidates) <= 3): # If few candidates, just include all
-                    relevant_candidates.append(c)
+            if not user_query:
+                return JsonResponse({'status': 'error', 'message': 'Query cannot be empty.'}, status=400)
 
-            context_parts = []
-            for c in relevant_candidates:
-                c_info = f"Candidate: {c.name}, Party: {c.party}, Bio: {c.bio[:200]}... \n"
-                c_info += f"AI Analysis: {c.ai_work_analysis or 'No analytical data yet'}. \n"
-                # Use only the latest manifesto for context to save tokens
-                m = c.manifestos.last()
-                if m:
-                    c_info += f"Manifesto Summary: {m.ai_vision_analysis or 'No manifesto analysis'}. \n"
-                context_parts.append(c_info)
+            # 1. Gather context using service
+            local_context, web_results = get_relevant_context(user_query)
             
-            local_context = "\n---\n".join(context_parts)
-            
-            # 2. Comprehensive Web Search (Triggered for candidates or specific keywords)
-            web_context = ""
-            political_keywords = ['news', 'recent', 'today', 'latest', 'election date', 'poll', 'who is', 'background', 'controversy', 'party', 'biography', 'history', 'record', 'manifesto', 'promise']
-            
-            # Search if keywords found OR if we identified specific candidates in the query
-            if any(word in query_lower for word in political_keywords) or len(relevant_candidates) > 0:
-                from .utils import web_search
-                # Enhance query for better web results if a specific candidate is mentioned
-                search_query = user_query
-                if relevant_candidates and len(relevant_candidates) == 1:
-                    search_query = f"{relevant_candidates[0].name} Nepal political background {user_query}"
-                
-                web_context = web_search(search_query)
-            
-            # 3. Combine contexts sparingly
-            full_context = f"LOCAL INFO:\n{local_context or 'No specific candidate data found.'}"
-            if web_context:
-                full_context += f"\n\nWEB SEARCH RESULTS:\n{web_context}"
-            
-            # 4. Get Conversational History from session
+            # 2. Get history from session
             history = request.session.get('chat_history', [])
             
-            bot_response = get_chatbot_response(user_query, full_context, history=history)
+            # 3. Get AI Response
+            bot_response = get_chatbot_response(
+                user_query=user_query, 
+                context_data=local_context, 
+                history=history,
+                web_results=web_results
+            )
             
-            # 5. Update history in session
+            print(f"DEBUG: AI Response received: {bot_response[:100]}...")
+            
+            # 4. Update session history
             history.append({'role': 'user', 'content': user_query})
             history.append({'role': 'assistant', 'content': bot_response})
-            # Limit history size to 10 messages for efficiency
-            request.session['chat_history'] = history[-10:]
+            request.session['chat_history'] = history[-10:] # Keep last 5 rounds
             
             return JsonResponse({'status': 'success', 'response': bot_response})
             
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            logger.exception("Chat view error: ")
+            return JsonResponse({'status': 'error', 'message': "I encountered a processing error. Please try a different query."}, status=500)
     
     return render(request, 'candidates/chat.html')
 
 def compare_candidates(request):
+    """
+    Simple side-by-side comparison of two candidates.
+    """
     candidate_ids = request.GET.getlist('compare')
-    candidates = Candidate.objects.filter(id__in=candidate_ids)
+    candidates = Candidate.objects.filter(id__in=candidate_ids).prefetch_related('manifestos')
     
     ai_comparison = None
     if len(candidates) == 2:
@@ -147,25 +125,21 @@ def compare_candidates(request):
         m2 = c2.manifestos.last()
         
         if m1 and m2:
-            from .utils import get_ai_response
             prompt = f"""
-            Compare these two candidates based on their Ghosada Patra (Manifesto):
+            COMPARE TWO CANDIDATES:
             
-            Candidate 1: {c1.name} ({c1.party})
-            Manifesto Summary 1: {m1.ai_vision_analysis}
+            CANDIDATE 1: {c1.name} ({c1.party})
+            Manifesto Highlights: {m1.vision_summary}
             
-            Candidate 2: {c2.name} ({c2.party})
-            Manifesto Summary 2: {m2.ai_vision_analysis}
+            CANDIDATE 2: {c2.name} ({c2.party})
+            Manifesto Highlights: {m2.vision_summary}
             
-            Provide a side-by-side comparison of their:
-            1. Economic Vision
-            2. Social Promises
-            3. Unique selling points
-            4. Feasibility comparison
-            
-            Format as a clear markdown table or structured sections.
+            Please provide a comparative analysis focusing on:
+            - Policy Priorities
+            - Economic Feasibility
+            - Public Record Contrast
             """
-            ai_comparison = get_ai_response(prompt)
+            ai_comparison = get_ai_response(prompt, system_instruction="You are a neutral Election Analyst.")
             
     return render(request, 'candidates/compare.html', {
         'candidates': candidates,
@@ -174,68 +148,74 @@ def compare_candidates(request):
 
 def analysis_lab(request):
     """
-    Independent analysis lab for 1 or 2 PDFs with interactive chat.
-    Strictly isolated from main chat via 'research_lab_' session namespace.
+    The Research Lab: Independent document analysis with context-aware chat.
     """
+    # AJAX Chat in the Lab
     if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Handle Chat Query via AJAX
         try:
             data = json.loads(request.body)
             user_query = data.get('query')
-            # Use specific namespace to avoid collision with main chat
-            doc_context = request.session.get('research_lab_context', 'No document context found.')
+            
+            # Use specific namespace for isolation
+            doc_context = request.session.get('research_lab_context', 'No document context available.')
             lab_history = request.session.get('research_lab_history', [])
             
-            history_str = "\n".join([f"{'User' if m['role'] == 'user' else 'AI'}: {m['content']}" for m in lab_history[-4:]])
+            history_str = ""
+            if lab_history:
+                history_str = "\n".join([f"{'User' if m['role'] == 'user' else 'Analyst'}: {m['content']}" for m in lab_history[-4:]])
             
-            from .utils import get_ai_response
             prompt = f"""
-            ROLE: You are the DOCUMENT RESEARCH ANALYST (Internal Laboratory).
-            TASK: Answer questions ONLY based on the uploaded Ghosada Patras provided below.
+            RESEARCH CONTEXT (The Documents):
+            {doc_context[:20000]} 
             
-            GHOSADA PATRA CONTEXT:
-            {doc_context}
+            CONVERSATION HISTORY:
+            {history_str or 'First query.'}
             
-            RESEARCH HISTORY:
-            {history_str or 'Session started.'}
-            
-            USER QUERY:
+            USER RESEARCH QUERY:
             {user_query}
             
             INSTRUCTIONS:
-            - Respond only based on the document text.
-            - If data is missing, say 'Information not found in the provided documents'.
-            - Keep analysis technical and accurate.
+            - Analyze the query ONLY using the provided RESEARCH CONTEXT.
+            - Provide a technical, objective response.
+            - If data is missing, suggest what information is needed from the user.
             """
-            response = get_ai_response(prompt)
             
-            # Update history
+            response = get_ai_response(prompt, system_instruction="You are a Senior Document Intelligence Analyst.")
+            
+            # Update isolation lab history
             lab_history.append({'role': 'user', 'content': user_query})
             lab_history.append({'role': 'assistant', 'content': response})
             request.session['research_lab_history'] = lab_history[-6:]
             
-            return JsonResponse({'response': response})
+            return JsonResponse({'status': 'success', 'response': response})
         except Exception as e:
-            return JsonResponse({'response': f"Signal Interrupted: {str(e)}"}, status=500)
+            logger.error(f"Lab Chat Error: {e}")
+            return JsonResponse({'status': 'error', 'response': "The lab system is offline or overloaded."}, status=500)
 
+    # Initial Upload and PDF Processing
     analysis_result = None
     if request.method == 'POST':
-        # Handle PDF Upload
         files = request.FILES.getlist('manifestos')
         if files:
             documents = []
             context_for_session = ""
-            for f in files[:2]:
-                text = extract_text_from_pdf(f)
-                documents.append({'name': f.name, 'text': text})
-                context_for_session += f"\n--- RESEARCH DOC: {f.name} ---\n{text[:15000]}\n"
+            for f in files[:2]: # Limit to 2 for side-by-side
+                try:
+                    text = extract_text_from_pdf(f)
+                    documents.append({'name': f.name, 'text': text})
+                    # Add to session context but limit total size to avoid session bloat
+                    context_for_session += f"\nFILE: {f.name}\nCONTENT: {text[:10000]}\n"
+                except Exception as e:
+                    logger.error(f"Error processing {f.name}: {e}")
             
-            # Persist in specific isolated session key
+            # Persist
             request.session['research_lab_context'] = context_for_session
-            request.session['research_lab_history'] = [] # Reset history for new docs
-            from .utils import analyze_multiple_manifestos
+            request.session['research_lab_history'] = [] 
+            
             analysis_result = analyze_multiple_manifestos(documents)
             request.session['research_lab_last_result'] = analysis_result
+            
+            messages.success(request, "Documents digitized and analyzed. You can now chat with the Lab AI.")
             
     return render(request, 'candidates/analysis_lab.html', {
         'analysis_result': analysis_result or request.session.get('research_lab_last_result')

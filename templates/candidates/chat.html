@@ -122,7 +122,20 @@
 
     /* Markdown Styling */
     .message-ai h1, .message-ai h2, .message-ai h3 { color: var(--primary); font-size: 1.05rem; margin: 0.75rem 0 0.25rem; }
-    .message-ai ul, .message-ai ol { margin-left: 1.2rem; }
+    .message-ai ul, .message-ai ol { margin-left: 1.2rem; margin-bottom: 0.5rem; }
+    .message-ai li { margin-bottom: 0.25rem; }
+    
+    /* Source Tags */
+    .source-tag {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 1px 4px;
+        border-radius: 4px;
+        margin-right: 4px;
+        vertical-align: middle;
+    }
+    .tag-db { background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+    .tag-web { background: rgba(16, 185, 129, 0.2); color: var(--accent); border: 1px solid var(--accent); }
 </style>
 {% endblock %}
 
@@ -147,11 +160,11 @@
 
             <div style="padding: 1.5rem; background: rgba(0,0,0,0.4); font-size: 0.8rem; border-top: 1px solid var(--glass-border);">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                    <span style="color: var(--text-dim);">Candidate Density</span>
-                    <span style="color: var(--primary);">HIGH RESPONSE</span>
+                    <span style="color: var(--text-dim);">Federal Intelligence Confidence</span>
+                    <span style="color: var(--primary);">98.4%</span>
                 </div>
                 <div style="width: 100%; height: 4px; background: var(--glass-border); border-radius: 10px; overflow: hidden;">
-                    <div style="width: 82%; height: 100%; background: linear-gradient(to right, var(--primary), var(--secondary)); box-shadow: 0 0 10px var(--primary);"></div>
+                    <div style="width: 98%; height: 100%; background: linear-gradient(to right, var(--primary), var(--accent)); box-shadow: 0 0 10px var(--primary);"></div>
                 </div>
             </div>
         </div>
@@ -161,7 +174,7 @@
                 <div style="width: 48px; height: 48px; background: rgba(220, 20, 60, 0.1); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem;">🇳🇵</div>
                 <div>
                     <h4 style="margin: 0; font-size: 0.95rem; color: white;">Voter Vision Nepal AI</h4>
-                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-dim);">Federal Democracy Engine v4.0</p>
+                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-dim);">Deep Search Enabled</p>
                 </div>
             </div>
         </div>
@@ -174,33 +187,33 @@
                 <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent);"></div>
                 <div>
                     <h3 style="margin-bottom: 0; font-size: 0.9rem; color: white;">Analysis Stream</h3>
-                    <p style="font-size: 0.7rem; margin-bottom: 0; color: var(--text-dim);">Connected to Federal Archives</p>
+                    <p style="font-size: 0.7rem; margin-bottom: 0; color: var(--text-dim);">Real-time synthesis active</p>
                 </div>
             </div>
-            <div class="badge badge-primary" style="font-size: 0.65rem;">ENCRYPTED</div>
+            <div class="badge badge-primary" style="font-size: 0.65rem;">SECURE CORE</div>
         </div>
 
         <div class="chat-messages" id="chatMessages">
             <div class="message message-ai">
-                <p><strong>Namaste! 🙏</strong></p>
-                <p>Establishing connection to the <strong>Nepal Election Intelligence Core</strong>. I have mapped currently listed candidates and analyzed their Ghosada Patra (Manifestos).</p>
-                <p>How can I assist your civic participation today?</p>
+                <p><strong>Namaste! 🙏 Intelligence Stream Online.</strong></p>
+                <p>I am now operating in <strong>Live Research Mode</strong>. I will search the <span class="source-tag tag-web">WEB</span> for real-time election news and candidate backgrounds as my primary source of intelligence.</p>
+                <p>What real-time record or news shall we examine today?</p>
             </div>
         </div>
 
         <div class="typing-indicator" id="typingIndicator">
-            <span style="animation: pulse 1s infinite;">●</span> Processing data stream...
+            <span style="animation: pulse 1s infinite;">●</span> Synchronizing intelligence nodes...
         </div>
 
         <div class="chat-input-wrapper">
             <div class="chat-input-area">
-                <input type="text" id="userInput" class="chat-input" placeholder="Query candidate positions or request comparisons..." onkeypress="handleKeyPress(event)">
-                <button class="btn-modern btn-fill" onclick="sendMessage()" style="padding: 8px 16px;">
+                <input type="text" id="userInput" class="chat-input" placeholder="Ask about candidates, parties, or latest news..." onkeypress="handleKeyPress(event)">
+                <button class="btn-modern btn-fill" onclick="sendMessage()" id="sendBtn" style="padding: 8px 16px;">
                     <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                 </button>
             </div>
             <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 1rem; text-align: center;">
-                BETA: Neutral AI analysis for informational purposes only. Jayanepal.
+                Neural Analysis Engine • Objective & Neutral • Jayanepal
             </p>
         </div>
     </div>
@@ -212,6 +225,7 @@
     const chatMessages = document.getElementById('chatMessages');
     const userInput = document.getElementById('userInput');
     const typingIndicator = document.getElementById('typingIndicator');
+    const sendBtn = document.getElementById('sendBtn');
 
     async function sendMessage() {
         const query = userInput.value.trim();
@@ -221,9 +235,11 @@
         userInput.value = '';
         
         typingIndicator.style.display = 'block';
+        sendBtn.disabled = true;
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
         try {
+            console.log("Sending query:", query);
             const response = await fetch("{% url 'chat' %}", {
                 method: 'POST',
                 headers: {
@@ -234,11 +250,19 @@
             });
 
             const data = await response.json();
+            console.log("Received data:", data);
             typingIndicator.style.display = 'none';
-            appendMessage(data.response, 'ai');
+            sendBtn.disabled = false;
+            
+            if (data.status === 'success') {
+                appendMessage(data.response, 'ai');
+            } else {
+                appendMessage("Signal interference detected: " + data.message, 'ai');
+            }
         } catch (error) {
             typingIndicator.style.display = 'none';
-            appendMessage("Signal lost. Re-establishing link...", 'ai');
+            sendBtn.disabled = false;
+            appendMessage("Satellite link failure. Please retry.", 'ai');
         }
     }
 
@@ -263,13 +287,38 @@
     }
 
     function formatAIResponse(text) {
-        return text
+        if (!text) return "<em>The intelligent core returned an empty signal.</em>";
+        
+        // 1. Sanitize/Safe escaping if needed (optional since we trust AI output here)
+        let html = String(text);
+
+        // 2. Process Source Tags
+        html = html
+            .replace(/\[DB\]/g, '<span class="source-tag tag-db">DB</span>')
+            .replace(/\[WEB\]/g, '<span class="source-tag tag-web">WEB</span>');
+
+        // 3. Bold and Italic
+        html = html
             .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\n/g, '<br>')
-            .replace(/### (.*?)$/gm, '<h3>$1</h3>')
-            .replace(/## (.*?)$/gm, '<h2>$1</h2>')
-            .replace(/# (.*?)$/gm, '<h1>$1</h1>');
+            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+        // 4. Headings (Multi-line safe)
+        html = html
+            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+            .replace(/^# (.*$)/gm, '<h1>$1</h1>');
+
+        // 5. Lists (Handle multiple items more robustly)
+        html = html.replace(/^\- (.*$)/gm, '<li>$1</li>');
+        // Wrap contiguous <li> groups in <ul>
+        html = html.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>'); 
+        // Note: The above is a simple fix; for complex markdown, a library is better, 
+        // but this should fix the immediate 'no answer' rendering issue.
+
+        // 6. Line breaks
+        html = html.replace(/\n/g, '<br>');
+
+        return html;
     }
 </script>
 
@@ -280,3 +329,4 @@
     }
 </style>
 {% endblock %}
+
