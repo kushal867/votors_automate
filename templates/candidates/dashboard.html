@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+
+{% block title %}नेपाल निर्वाचन खुफिया | Strategic Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    <!-- Header Summary -->
+    <div style="margin-bottom: 3.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+        <div>
+            <h2 class="traditional-font" style="font-size: 3.2rem; margin-bottom: 0.5rem;">नेपाल निर्वाचन खुफिया</h2>
+            <p style="color: var(--text-muted); font-size: 1.15rem; font-weight: 500; letter-spacing: 0.5px;">National Strategic Command Center — Real-time Intelligence Synthesis</p>
+        </div>
+        <div class="dashboard-date" style="text-align: right; color: var(--text-dim); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+            System Active: 2026.01.19 <br> Status: Fully Operational
+        </div>
+    </div>
+
+    <!-- Row 1: High-Fidelity Stat Cards -->
+    <div class="stat-grid">
+        <div class="glass-card stat-card glow-red">
+            <div class="stat-header">
+                <div class="stat-icon-box" style="background: rgba(255, 0, 85, 0.1); color: var(--secondary);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                </div>
+                <div class="tiny-sparkline">
+                    <svg viewBox="0 0 100 30" width="80" height="25">
+                        <path d="M0,25 Q15,5 30,20 T60,10 T100,22" fill="none" stroke="var(--secondary)" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.queries_processed }}</div>
+            <div class="stat-label">Neural Queries</div>
+        </div>
+
+        <div class="glass-card stat-card glow-green">
+            <div class="stat-header">
+                <div class="stat-icon-box" style="background: rgba(0, 255, 136, 0.1); color: var(--accent);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <div class="tiny-sparkline">
+                    <svg viewBox="0 0 100 30" width="80" height="25">
+                        <path d="M0,20 Q20,25 40,5 T70,15 T100,5" fill="none" stroke="var(--accent)" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.ingested_data }}</div>
+            <div class="stat-label">Data Ingestions</div>
+        </div>
+
+        <div class="glass-card stat-card glow-teal">
+            <div class="stat-header">
+                <div class="stat-icon-box" style="background: rgba(0, 210, 255, 0.1); color: var(--teal);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                </div>
+                <div class="tiny-sparkline">
+                    <svg viewBox="0 0 100 30" width="80" height="25">
+                        <path d="M0,15 L20,15 L40,25 L60,5 L80,20 L100,10" fill="none" stroke="var(--teal)" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value">6,000+</div>
+            <div class="stat-label">Encryption Nodes</div>
+        </div>
+
+        <div class="glass-card stat-card glow-gold">
+            <div class="stat-header">
+                <div class="stat-icon-box" style="background: rgba(255, 204, 0, 0.1); color: var(--gold);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
+                <div class="tiny-sparkline">
+                    <svg viewBox="0 0 100 30" width="80" height="25">
+                        <path d="M0,25 C20,25 40,0 60,15 S80,5 100,5" fill="none" stroke="var(--gold)" stroke-width="2" />
+                    </svg>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.total_assets }}</div>
+            <div class="stat-label">Political Assets</div>
+        </div>
+    </div>
+
+    <!-- Row 2: Maps & Featured Spotlight -->
+    <div class="middle-grid">
+        <div class="glass-card map-workspace">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 class="box-title">Electoral Distribution Map</h3>
+                <div class="map-controls">
+                    <span class="active">PROVINCIAL</span>
+                    <span>DISTRICT</span>
+                </div>
+            </div>
+            <div class="map-viewport">
+                <svg viewBox="0 0 800 450" class="neon-map">
+                    <!-- Accurate-ish Nepal Outline with Districts -->
+                    <path d="M50,150 L250,100 L500,80 L780,120 L800,300 L750,380 L550,420 L300,430 L50,380 Z" fill="rgba(67, 97, 238, 0.05)" stroke="var(--primary)" stroke-width="2" />
+                    <circle cx="200" cy="220" r="12" fill="var(--secondary)" class="map-node" />
+                    <circle cx="200" cy="220" r="25" fill="none" stroke="var(--secondary)" stroke-width="1" class="ping" />
+                    <circle cx="450" cy="180" r="8" fill="var(--secondary)" class="map-node" />
+                    <circle cx="650" cy="250" r="10" fill="var(--secondary)" class="map-node" />
+                </svg>
+                <div class="caption-overlay">SENSITIVITY: HIGH / TARGET LOCK ACTIVE</div>
+            </div>
+        </div>
+
+        <div class="glass-card map-workspace">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 class="box-title">Infrastructure Deployment</h3>
+                <div class="badge-pill" style="background: rgba(0, 255, 136, 0.1); color: var(--accent);">Active</div>
+            </div>
+            <div class="map-viewport">
+                <svg viewBox="0 0 800 450" class="neon-map">
+                    <path d="M50,150 L250,100 L500,80 L780,120 L800,300 L750,380 L550,420 L300,430 L50,380 Z" fill="rgba(0, 255, 136, 0.05)" stroke="var(--accent)" stroke-width="2" />
+                    <path d="M100,200 L300,150 L500,300 L700,200" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="10 15" class="flowing-path" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="glass-card spotlight-card">
+            <div class="spotlight-header">
+                <div class="badge badge-rose" style="border-radius: 8px;">TARGET LOG</div>
+                <div class="more-options">...</div>
+            </div>
+            
+            {% if featured_candidate %}
+            <div class="target-profile">
+                <div class="target-avatar">
+                    <div class="scanner-ring"></div>
+                    {% if featured_candidate.image %}
+                        <img src="{{ featured_candidate.image.url }}" alt="{{ featured_candidate.name }}">
+                    {% else %}
+                        <div class="avatar-ph">👤</div>
+                    {% endif %}
+                </div>
+                <h4 style="font-size: 1.8rem; margin-top: 2rem; letter-spacing: -0.5px;">{{ featured_candidate.name }}</h4>
+                <div style="color: var(--secondary); font-weight: 800; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;">{{ featured_candidate.party }}</div>
+                
+                <div class="target-metrics">
+                    <div class="metric">
+                        <span class="m-val">{{ stats.ingested_data }}</span>
+                        <span class="m-lab">Files</span>
+                    </div>
+                    <div class="metric highlight">
+                        <span class="m-val">22</span>
+                        <span class="m-lab">Signals</span>
+                    </div>
+                    <div class="metric">
+                        <span class="m-val">9.8</span>
+                        <span class="m-lab">Core</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-dim);">No Active Target Loaded</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Row 3: Analytics & Records -->
+    <div class="bottom-grid">
+        <div class="glass-card analytic-box">
+            <h3 class="box-title">Network Sentiment Velocity</h3>
+            <div class="bar-ensemble">
+                <div class="bar-wrapper"><div class="bar" style="height: 40%; --c: var(--secondary);"></div><span>JAN</span></div>
+                <div class="bar-wrapper"><div class="bar" style="height: 75%; --c: var(--primary);"></div><span>FEB</span></div>
+                <div class="bar-wrapper"><div class="bar" style="height: 55%; --c: var(--accent);"></div><span>MAR</span></div>
+                <div class="bar-wrapper"><div class="bar" style="height: 90%; --c: var(--gold);"></div><span>APR</span></div>
+                <div class="bar-wrapper"><div class="bar" style="height: 60%; --c: var(--teal);"></div><span>MAY</span></div>
+                <div class="bar-wrapper"><div class="bar" style="height: 85%; --c: var(--primary);"></div><span>JUN</span></div>
+            </div>
+        </div>
+
+        <div class="glass-card analytic-box">
+             <h3 class="box-title">Intelligence Flow Index</h3>
+             <div class="vector-graph">
+                  <svg viewBox="0 0 400 150">
+                      <defs>
+                          <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" style="stop-color:var(--primary);stop-opacity:0.3" />
+                              <stop offset="100%" style="stop-color:transparent;stop-opacity:0" />
+                          </linearGradient>
+                      </defs>
+                      <path d="M0,120 Q50,40 100,100 T200,60 T300,110 T400,20" fill="none" stroke="var(--primary)" stroke-width="4" />
+                      <path d="M0,120 Q50,40 100,100 T200,60 T300,110 T400,20 V150 H0 Z" fill="url(#grad)" />
+                      <circle cx="400" cy="20" r="6" fill="#fff" class="glow-pulse" />
+                  </svg>
+             </div>
+        </div>
+
+        <div class="glass-card profile-feed">
+            <h3 class="box-title">Latest Intelligence Briefs</h3>
+            <div class="feed-container">
+                {% for cand in recent_candidates %}
+                <div class="feed-entry">
+                    <div class="entry-avatar">
+                        {% if cand.image %}<img src="{{ cand.image.url }}">{% else %}<span>🇳🇵</span>{% endif %}
+                    </div>
+                    <div class="entry-meta">
+                        <div class="e-name">{{ cand.name }}</div>
+                        <div class="e-sub">{{ cand.party }}</div>
+                    </div>
+                    {% if forloop.first %}
+                        <div class="e-tag status-high">+ 45.8%</div>
+                    {% else %}
+                        <div class="e-tag status-norm">{{ forloop.counter }}0.2%</div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div style="padding: 2rem; text-align: center; color: var(--text-dim);">No briefs available.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-wrapper { padding-bottom: 5rem; }
+
+    /* Grids */
+    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.2rem; margin-bottom: 3.5rem; }
+    .middle-grid { display: grid; grid-template-columns: 1fr 1fr 400px; gap: 2.2rem; margin-bottom: 3.5rem; }
+    .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 400px; gap: 2.2rem; }
+
+    /* Components */
+    .box-title {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 800;
+    }
+
+    .stat-card {
+        padding: 2.2rem;
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+    }
+
+    .stat-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+    .stat-icon-box { width: 54px; height: 54px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+    .stat-value { font-size: 2.4rem; font-weight: 800; color: #fff; margin-bottom: 0.4rem; font-family: 'Outfit'; }
+    .stat-label { font-size: 0.8rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; }
+
+    /* Maps */
+    .map-workspace { height: 420px; display: flex; flex-direction: column; }
+    .map-viewport { flex: 1; background: rgba(0,0,0,0.3); border-radius: var(--radius-md); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 1px solid var(--glass-border); }
+    .neon-map { width: 100%; height: 90%; }
+    .caption-overlay { position: absolute; bottom: 1.5rem; left: 1.5rem; font-size: 0.65rem; color: var(--primary); font-weight: 900; letter-spacing: 2px; opacity: 0.7; }
+    
+    .map-controls { display: flex; gap: 1rem; }
+    .map-controls span { font-size: 0.65rem; font-weight: 900; color: var(--text-dim); cursor: pointer; padding-bottom: 4px; border-bottom: 2px solid transparent; }
+    .map-controls span.active { color: var(--primary); border-color: var(--primary); }
+
+    /* Spotlight */
+    .spotlight-card { background: linear-gradient(135deg, var(--bg-surface) 0%, #151b2d 100%); padding: 3rem; text-align: center; }
+    .target-avatar { position: relative; width: 160px; height: 160px; margin: 0 auto; padding: 10px; }
+    .target-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; filter: contrast(1.1) saturate(1.2); }
+    .scanner-ring { position: absolute; inset: 0; border: 2px solid var(--secondary); border-radius: 50%; border-top-color: transparent; border-bottom-color: transparent; animation: rotate 3s linear infinite; }
+    
+    .target-metrics { display: flex; justify-content: space-around; margin-top: 3.5rem; padding-top: 2.5rem; border-top: 1px solid var(--glass-border); }
+    .metric { display: flex; flex-direction: column; gap: 5px; }
+    .m-val { font-size: 1.4rem; font-weight: 800; color: #fff; }
+    .m-lab { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; font-weight: 800; }
+    .metric.highlight .m-val { color: var(--secondary); text-shadow: 0 0 10px rgba(255, 0, 85, 0.4); }
+
+    /* Analytics */
+    .analytic-box { padding: 2.5rem; }
+    .bar-ensemble { display: flex; align-items: flex-end; justify-content: space-around; height: 180px; margin-top: 2rem; }
+    .bar-wrapper { display: flex; flex-direction: column; align-items: center; gap: 1rem; flex: 1; }
+    .bar { width: 30px; border-radius: 8px 8px 2px 2px; background: var(--c); box-shadow: 0 5px 20px rgba(0,0,0,0.4); transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .bar:hover { filter: brightness(1.3); transform: scaleY(1.05); }
+    .bar-wrapper span { font-size: 0.65rem; color: var(--text-dim); font-weight: 800; }
+
+    .vector-graph { height: 180px; margin-top: 2rem; }
+
+    /* Feed */
+    .feed-container { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
+    .feed-entry { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 1.2rem; border-radius: 14px; border: 1px solid var(--glass-border); transition: 0.3s; }
+    .feed-entry:hover { background: rgba(255,255,255,0.06); transform: scale(1.02); }
+    .entry-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--bg-surface); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--glass-border); }
+    .entry-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .entry-meta { flex: 1; }
+    .e-name { font-size: 0.95rem; font-weight: 800; color: #fff; }
+    .e-sub { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
+    .e-tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; }
+    .status-high { background: rgba(0, 255, 136, 0.1); color: var(--accent); }
+    .status-norm { background: rgba(255, 255, 255, 0.05); color: var(--text-dim); }
+
+    /* Animations */
+    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes flowing { 0% { stroke-dashoffset: 100; } 100% { stroke-dashoffset: 0; } }
+    .flowing-path { animation: flowing 5s linear infinite; }
+    @keyframes ping { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(2); opacity: 0; } }
+    .ping { animation: ping 2s infinite ease-out; transform-origin: center; }
+    @keyframes glow { 0%, 100% { opacity: 0.5; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+    .glow-pulse { animation: glow 2s infinite ease-in-out; }
+</style>
+{% endblock %}

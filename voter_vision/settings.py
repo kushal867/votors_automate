@@ -31,7 +31,10 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 
 # Application definition
@@ -134,4 +137,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 GEMINI_API_KEY = env('GEMINI_API_KEY', default='')
 GROQ_API_KEY = env('GROQ_API_KEY', default='')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://dolls-vegetation-rough-dave.trycloudflare.com',
+    'https://*.trycloudflare.com',
+]
 

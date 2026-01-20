@@ -1,45 +1,105 @@
 {% extends 'base.html' %}
 
-{% block title %}Upload Manifesto - {{ candidate.name }} | Voter Vision AI{% endblock %}
+{% block title %}Vision Ingestion - {{ candidate.name }} | Voter Vision AI{% endblock %}
 
 {% block content %}
-<div style="max-width: 650px; margin: 0 auto;">
-    <div class="premium-card">
-        <div style="text-align: center; margin-bottom: 2.5rem;">
-            <div class="badge badge-primary" style="margin-bottom: 1rem;">GOVERNANCE VISION</div>
-            <h1 class="gradient-text" style="font-size: 2rem; margin-bottom: 0.5rem;">Upload Document</h1>
-            <p>Processing Ghosada Patra (Manifesto) for <span style="color: white; font-weight: 700;">{{ candidate.name }}</span></p>
+<div class="reveal" style="max-width: 700px; margin: 0 auto;">
+    <div class="premium-card" style="padding: 4rem;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <div class="badge badge-indigo" style="margin-bottom: 1.5rem;">SATELLITE SOURCE INGESTION</div>
+            <h1 class="gradient-text" style="font-size: 2.5rem;">Ingest Vision Document</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 1rem;">
+                Target Asset: <span style="color: white; font-weight: 800;">{{ candidate.name }}</span>
+            </p>
         </div>
         
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
             {% csrf_token %}
             
-            <div style="margin-bottom: 2rem; border: 2px dashed var(--glass-border); padding: 4rem 2rem; border-radius: 20px; text-align: center; transition: all 0.3s; background: rgba(255,255,255,0.01);" onmouseover="this.style.borderColor='var(--primary)'; this.style.background='rgba(99, 102, 241, 0.03)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.background='rgba(255,255,255,0.01)'">
+            <div class="ingestion-zone" id="dropZone">
                 <input type="file" name="pdf_file" id="pdf_file" accept=".pdf" required style="display: none;">
-                <label for="pdf_file" style="cursor: pointer;">
-                    <div style="width: 64px; height: 64px; background: rgba(99, 102, 241, 0.1); border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 1.5rem; color: var(--primary);">
+                <label for="pdf_file" style="cursor: pointer; display: block;">
+                    <div class="icon-circle">
                         <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                         </svg>
                     </div>
-                    <p id="fileName" style="font-weight: 700; font-size: 1.1rem; color: white;">Drop Vision PDF here</p>
-                    <p style="font-size: 0.85rem; color: var(--text-dim); margin-top: 0.5rem;">The AI Intelligence Core will extract and analyze policy goals.</p>
+                    <div id="statusContent">
+                        <h3 style="color: white; margin-bottom: 0.5rem; letter-spacing: 1px;">DEPLOY GHOSADA PATRA</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-dim);">The Intelligence Core will decrypt and synthesize policy goals.</p>
+                    </div>
                 </label>
             </div>
 
-            <div style="display: flex; gap: 1rem;">
-                <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline" style="flex: 1; justify-content: center;">Back to Profile</a>
-                <button type="submit" class="btn-modern btn-fill" style="flex: 2; justify-content: center;">Analyze Vision Document</button>
+            <div class="action-bar">
+                <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline" style="flex: 1;">ABORT</a>
+                <button type="submit" class="btn-modern btn-primary" style="flex: 2;">INITIALIZE VISION SYNTHESIS</button>
             </div>
         </form>
     </div>
 </div>
 
+<style>
+    .ingestion-zone {
+        border: 2px dashed var(--glass-border);
+        padding: 5rem 2rem;
+        border-radius: var(--radius-lg);
+        text-align: center;
+        background: rgba(255, 255, 255, 0.01);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-bottom: 3.5rem;
+    }
+
+    .ingestion-zone:hover {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.03);
+        transform: translateY(-2px);
+    }
+
+    .ingestion-zone.active {
+        border-color: var(--accent);
+        background: rgba(16, 185, 129, 0.03);
+        border-style: solid;
+    }
+
+    .icon-circle {
+        width: 80px;
+        height: 80px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto 2rem;
+        color: var(--primary);
+        transition: all 0.3s;
+    }
+
+    .ingestion-zone:hover .icon-circle {
+        transform: scale(1.1);
+        box-shadow: 0 0 30px var(--primary-glow);
+    }
+
+    .action-bar {
+        display: flex;
+        gap: 1.5rem;
+        padding-top: 3rem;
+        border-top: 1px solid var(--glass-border);
+    }
+</style>
+
 <script>
-    document.getElementById('pdf_file').onchange = function() {
+    const fileInput = document.getElementById('pdf_file');
+    const dropZone = document.getElementById('dropZone');
+    const statusContent = document.getElementById('statusContent');
+
+    fileInput.onchange = function() {
         if (this.files[0]) {
-            document.getElementById('fileName').innerHTML = "Selected: " + this.files[0].name;
-            document.getElementById('fileName').style.color = "var(--accent)";
+            dropZone.classList.add('active');
+            statusContent.innerHTML = `
+                <h3 style="color: var(--accent); margin-bottom: 0.5rem; letter-spacing: 1px;">SOURCE SECURED</h3>
+                <p style="font-size: 1rem; color: white; font-weight: 800;">${this.files[0].name}</p>
+            `;
         }
     };
 </script>

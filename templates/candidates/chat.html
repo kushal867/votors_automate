@@ -4,217 +4,244 @@
 
 {% block extra_css %}
 <style>
-    .chat-layout {
+    .strategic-layout {
         display: grid;
-        grid-template-columns: 450px 1fr;
-        gap: 2rem;
-        height: calc(100vh - var(--nav-height) - 4rem);
+        grid-template-columns: 1fr 1.1fr;
+        gap: 6rem;
+        align-items: center;
+        min-height: 80vh;
+        padding-top: 2rem;
     }
 
-    .chat-card {
+    @media (max-width: 1200px) {
+        .strategic-layout { grid-template-columns: 1fr; gap: 4rem; text-align: center; }
+    }
+
+    /* Left Side: Strategic Insight */
+    .strategic-brand {
         display: flex;
         flex-direction: column;
-        padding: 0;
-        overflow: hidden;
+        gap: 2rem;
     }
 
-    .chat-header {
+    .hero-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .hero-image {
+        width: 100%;
+        max-width: 600px;
+        filter: drop-shadow(0 0 80px rgba(99, 102, 241, 0.25));
+        animation: cinematicFloat 8s ease-in-out infinite;
+    }
+
+    @keyframes cinematicFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-25px) rotate(1deg); }
+    }
+
+    /* Right Side: Command Console */
+    .command-console {
+        background: var(--bg-surface);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
+        height: 750px;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-lg), 0 0 40px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(40px);
+    }
+
+    .console-header {
         padding: 1.5rem 2.5rem;
-        background: rgba(255,255,255,0.02);
-        border-bottom: 1px solid var(--glass-border);
         display: flex;
         justify-content: space-between;
         align-items: center;
+        background: rgba(255, 255, 255, 0.02);
+        border-bottom: 1px solid var(--glass-border);
     }
 
-    .chat-messages {
+    .stream-indicator {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .status-pulse {
+        width: 10px;
+        height: 10px;
+        background: var(--secondary);
+        border-radius: 50%;
+        box-shadow: 0 0 15px var(--secondary);
+        animation: pulseGlow 1.5s infinite;
+    }
+
+    @keyframes pulseGlow {
+        0% { opacity: 0.5; transform: scale(0.9); }
+        50% { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 0.5; transform: scale(0.9); }
+    }
+
+    .message-stream {
         flex: 1;
         overflow-y: auto;
-        padding: 2rem;
+        padding: 3rem;
         display: flex;
         flex-direction: column;
-        gap: 1.5rem;
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary) transparent;
+        gap: 2rem;
+        scrollbar-width: none;
     }
 
-    .message {
+    .message-stream::-webkit-scrollbar { display: none; }
+
+    .msg-bubble {
         max-width: 85%;
-        padding: 1.1rem 1.5rem;
-        border-radius: 18px;
-        font-size: 0.95rem;
-        line-height: 1.6;
+        padding: 1.5rem 2rem;
+        font-size: 1rem;
+        line-height: 1.7;
         position: relative;
-        animation: messageReveal 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
     }
 
-    @keyframes messageReveal {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    .message-user {
+    .msg-user {
         align-self: flex-end;
         background: var(--primary);
         color: white;
-        border-bottom-right-radius: 4px;
-        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        border-radius: 24px 24px 4px 24px;
+        box-shadow: 0 10px 30px rgba(99, 102, 241, 0.15);
     }
 
-    .message-ai {
+    .msg-ai {
         align-self: flex-start;
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text-main);
-        border-bottom-left-radius: 4px;
+        background: var(--glass-white);
         border: 1px solid var(--glass-border);
+        color: #e2e8f0;
+        border-radius: 24px 24px 24px 4px;
     }
 
-    .chat-input-wrapper {
-        padding: 1.5rem 2rem;
-        background: rgba(255,255,255,0.02);
+    .console-input-area {
+        padding: 2.5rem;
+        background: rgba(0, 0, 0, 0.2);
         border-top: 1px solid var(--glass-border);
     }
 
-    .chat-input-area {
+    .input-box {
+        background: rgba(5, 7, 10, 0.8);
+        border-radius: 99px;
+        padding: 10px 12px 10px 28px;
         display: flex;
-        gap: 1rem;
-        padding: 0.75rem 1.25rem;
-        background: rgba(0, 0, 0, 0.4);
-        border-radius: 14px;
+        align-items: center;
+        gap: 15px;
         border: 1px solid var(--glass-border);
+        transition: all 0.3s;
     }
 
-    .chat-input {
+    .input-box:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .chat-field {
         flex: 1;
         background: transparent;
         border: none;
         color: white;
-        padding: 0.5rem 0;
+        padding: 12px 0;
         font-size: 1rem;
         outline: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .typing-indicator {
-        font-size: 0.85rem;
-        color: var(--primary);
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        display: none;
-        padding-left: 2rem;
-    }
-
-    /* Map Styles */
-    .pulse-point {
-        position: absolute;
-        width: 12px;
-        height: 12px;
-        background: var(--primary);
+    .execute-btn {
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
-        box-shadow: 0 0 20px var(--primary);
-        animation: pulseMap 1.5s infinite;
+        background: var(--primary);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
     }
 
-    @keyframes pulseMap {
-        0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-        70% { transform: scale(3); opacity: 0; box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
-        100% { transform: scale(1); opacity: 0; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+    .execute-btn:hover {
+        transform: scale(1.05);
+        background: #4f46e5;
+        box-shadow: 0 0 20px var(--primary-glow);
     }
 
-    /* Markdown Styling */
-    .message-ai h1, .message-ai h2, .message-ai h3 { color: var(--primary); font-size: 1.05rem; margin: 0.75rem 0 0.25rem; }
-    .message-ai ul, .message-ai ol { margin-left: 1.2rem; margin-bottom: 0.5rem; }
-    .message-ai li { margin-bottom: 0.25rem; }
-    
-    /* Source Tags */
+    /* AI Response Formatting */
     .source-tag {
+        display: inline-flex;
+        padding: 2px 8px;
+        border-radius: 4px;
         font-size: 0.65rem;
         font-weight: 800;
-        padding: 1px 4px;
-        border-radius: 4px;
-        margin-right: 4px;
-        vertical-align: middle;
+        margin-right: 8px;
+        text-transform: uppercase;
     }
-    .tag-db { background: rgba(99, 102, 241, 0.2); color: var(--primary); border: 1px solid var(--primary); }
-    .tag-web { background: rgba(16, 185, 129, 0.2); color: var(--accent); border: 1px solid var(--accent); }
+
+    .tag-db { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .tag-web { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-ai { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="chat-layout reveal">
-    <!-- Left Panel: Strategic Assets -->
-    <div style="display: flex; flex-direction: column; gap: 2rem;">
-        <div class="premium-card" style="flex: 1; padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--glass-border); background: rgba(255,255,255,0.02);">
-                <h3 style="margin: 0; font-size: 0.8rem; color: var(--primary); letter-spacing: 2px; text-transform: uppercase;">Strategic Geography</h3>
-            </div>
-            
-            <div style="flex: 1; position: relative; background: #010413; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                <img src="/static/images/nepal_map.png" alt="Nepal Strategic Map" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.7;">
-                <div style="position: absolute; inset: 0; background: radial-gradient(circle at center, transparent 30%, rgba(2, 6, 23, 0.9) 100%);"></div>
-                
-                <!-- Simulated Strategic Nodes -->
-                <div class="pulse-point" style="top: 50%; left: 45%;"></div>
-                <div class="pulse-point" style="top: 45%; left: 25%; animation-delay: 0.5s;"></div>
-                <div class="pulse-point" style="top: 60%; left: 75%; animation-delay: 1s;"></div>
-            </div>
-
-            <div style="padding: 1.5rem; background: rgba(0,0,0,0.4); font-size: 0.8rem; border-top: 1px solid var(--glass-border);">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                    <span style="color: var(--text-dim);">Federal Intelligence Confidence</span>
-                    <span style="color: var(--primary);">98.4%</span>
-                </div>
-                <div style="width: 100%; height: 4px; background: var(--glass-border); border-radius: 10px; overflow: hidden;">
-                    <div style="width: 98%; height: 100%; background: linear-gradient(to right, var(--primary), var(--accent)); box-shadow: 0 0 10px var(--primary);"></div>
-                </div>
-            </div>
+<div class="strategic-layout reveal">
+    <!-- Brand & Strategy -->
+    <div class="strategic-brand">
+        <div>
+            <div class="badge badge-indigo" style="margin-bottom: 1.5rem;">SATELLITE DOWNLINK ACTIVE</div>
+            <h1 style="font-size: 4rem;">Intelligence <span class="gradient-text">Headquarters</span></h1>
+            <p style="color: var(--text-muted); font-size: 1.25rem; line-height: 1.8; max-width: 500px;">
+                Direct interface with the VoterVision AI Core. Execute complex political queries and real-time synthesis across the neural landscape.
+            </p>
         </div>
-
-        <div class="premium-card" style="padding: 1.25rem;">
-            <div style="display: flex; gap: 1rem; align-items: center;">
-                <div style="width: 48px; height: 48px; background: rgba(220, 20, 60, 0.1); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem;">🇳🇵</div>
-                <div>
-                    <h4 style="margin: 0; font-size: 0.95rem; color: white;">Voter Vision Nepal AI</h4>
-                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-dim);">Deep Search Enabled</p>
-                </div>
-            </div>
+        
+        <div class="hero-container">
+            <img src="/static/images/nepal_khukuri_map_art.png" class="hero-image" alt="Strategic Intelligence Core">
         </div>
     </div>
 
-    <!-- Right Panel: Intelligence Stream -->
-    <div class="premium-card chat-card">
-        <div class="chat-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent);"></div>
-                <div>
-                    <h3 style="margin-bottom: 0; font-size: 0.9rem; color: white;">Analysis Stream</h3>
-                    <p style="font-size: 0.7rem; margin-bottom: 0; color: var(--text-dim);">Real-time synthesis active</p>
-                </div>
+    <!-- Interface Console -->
+    <div class="command-console">
+        <div class="console-header">
+            <div class="stream-indicator">
+                <div class="status-pulse"></div>
+                <span style="font-weight: 800; color: white; letter-spacing: 1px; font-size: 0.9rem; text-transform: uppercase;">Neural Stream</span>
             </div>
-            <div class="badge badge-primary" style="font-size: 0.65rem;">SECURE CORE</div>
+            <div class="badge badge-rose" style="font-size: 0.6rem;">Isolated Encryption</div>
         </div>
 
-        <div class="chat-messages" id="chatMessages">
-            <div class="message message-ai">
-                <p><strong>Namaste! 🙏 Intelligence Stream Online.</strong></p>
-                <p>I am now operating in <strong>Live Research Mode</strong>. I will search the <span class="source-tag tag-web">WEB</span> for real-time election news and candidate backgrounds as my primary source of intelligence.</p>
-                <p>What real-time record or news shall we examine today?</p>
+        <div class="message-stream" id="messageStream">
+            <div class="msg-bubble msg-ai">
+                <p style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.4rem; margin-bottom: 0.8rem;">Systems Initialize</p>
+                <p style="opacity: 0.9;">
+                    Intelligence nodes synchronized. Ready for political data extraction and strategic profile modeling. 
+                    How shall we proceed with the mission parameters?
+                </p>
             </div>
         </div>
 
-        <div class="typing-indicator" id="typingIndicator">
-            <span style="animation: pulse 1s infinite;">●</span> Synchronizing intelligence nodes...
+        <div style="display: none; padding: 0 3rem 1.5rem;" id="typingState">
+            <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 0.8rem; font-weight: 800;">
+                <div class="status-pulse" style="width: 6px; height: 6px;"></div>
+                SYNTHESIZING INTELLIGENCE...
+            </div>
         </div>
 
-        <div class="chat-input-wrapper">
-            <div class="chat-input-area">
-                <input type="text" id="userInput" class="chat-input" placeholder="Ask about candidates, parties, or latest news..." onkeypress="handleKeyPress(event)">
-                <button class="btn-modern btn-fill" onclick="sendMessage()" id="sendBtn" style="padding: 8px 16px;">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+        <div class="console-input-area">
+            <div class="input-box">
+                <input type="text" id="userInput" class="chat-field" placeholder="Input query parameters..." onkeypress="handleKeyPress(event)">
+                <button class="execute-btn" onclick="sendMessage()">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7-7 7M3 12h18"></path></svg>
                 </button>
             </div>
-            <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 1rem; text-align: center;">
-                Neural Analysis Engine • Objective & Neutral • Jayanepal
-            </p>
         </div>
     </div>
 </div>
@@ -222,24 +249,21 @@
 
 {% block extra_js %}
 <script>
-    const chatMessages = document.getElementById('chatMessages');
+    const messageStream = document.getElementById('messageStream');
     const userInput = document.getElementById('userInput');
-    const typingIndicator = document.getElementById('typingIndicator');
-    const sendBtn = document.getElementById('sendBtn');
+    const typingState = document.getElementById('typingState');
 
     async function sendMessage() {
         const query = userInput.value.trim();
         if (!query) return;
 
-        appendMessage(query, 'user');
+        appendUI(query, 'user');
         userInput.value = '';
         
-        typingIndicator.style.display = 'block';
-        sendBtn.disabled = true;
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        typingState.style.display = 'block';
+        messageStream.scrollTop = messageStream.scrollHeight;
 
         try {
-            console.log("Sending query:", query);
             const response = await fetch("{% url 'chat' %}", {
                 method: 'POST',
                 headers: {
@@ -250,83 +274,61 @@
             });
 
             const data = await response.json();
-            console.log("Received data:", data);
-            typingIndicator.style.display = 'none';
-            sendBtn.disabled = false;
+            typingState.style.display = 'none';
             
             if (data.status === 'success') {
-                appendMessage(data.response, 'ai');
+                appendUI(data.response, 'ai');
             } else {
-                appendMessage("Signal interference detected: " + data.message, 'ai');
+                appendUI("Interruption: " + data.message, 'ai');
             }
         } catch (error) {
-            typingIndicator.style.display = 'none';
-            sendBtn.disabled = false;
-            appendMessage("Satellite link failure. Please retry.", 'ai');
+            typingState.style.display = 'none';
+            appendUI("Satellite Link Failure. Emergency backup link active - please retry.", 'ai');
         }
     }
 
-    function appendMessage(text, sender) {
+    function appendUI(text, sender) {
         const div = document.createElement('div');
-        div.className = `message message-${sender}`;
+        div.className = `msg-bubble msg-${sender} reveal`;
         
         if (sender === 'ai') {
-            div.innerHTML = formatAIResponse(text);
+            div.innerHTML = formatPacket(text);
         } else {
             div.textContent = text;
         }
         
-        chatMessages.appendChild(div);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        messageStream.appendChild(div);
+        messageStream.scrollTop = messageStream.scrollHeight;
     }
 
-    function handleKeyPress(event) {
-        if (event.key === 'Enter') {
-            sendMessage();
-        }
-    }
+    function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
 
-    function formatAIResponse(text) {
-        if (!text) return "<em>The intelligent core returned an empty signal.</em>";
+    function formatPacket(text) {
+        if (!text) return "<em>Empty neural packet received.</em>";
         
-        // 1. Sanitize/Safe escaping if needed (optional since we trust AI output here)
         let html = String(text);
 
-        // 2. Process Source Tags
+        // Advanced Tags
         html = html
-            .replace(/\[DB\]/g, '<span class="source-tag tag-db">DB</span>')
-            .replace(/\[WEB\]/g, '<span class="source-tag tag-web">WEB</span>');
+            .replace(/\[DB\]/g, '<span class="source-tag tag-db">Database</span>')
+            .replace(/\[WEB\]/g, '<span class="source-tag tag-web">Web Node</span>')
+            .replace(/\[AI\]/g, '<span class="source-tag tag-ai">Synthetic</span>');
 
-        // 3. Bold and Italic
+        // Cinematic Typography
         html = html
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>');
+            .replace(/\*\*(.*?)\*\*/g, '<strong style="color: white; font-weight: 800;">$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em style="color: var(--primary); font-weight: 600;">$1</em>');
 
-        // 4. Headings (Multi-line safe)
+        // Structure
         html = html
-            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-            .replace(/^# (.*$)/gm, '<h1>$1</h1>');
+            .replace(/^### (.*$)/gm, '<h3 style="color: white; margin-top: 1.5rem; font-weight: 800; font-family: Outfit;">$1</h3>')
+            .replace(/^## (.*$)/gm, '<h2 style="color: white; margin-top: 1.5rem; font-weight: 800; font-family: Outfit;">$1</h2>');
 
-        // 5. Lists (Handle multiple items more robustly)
-        html = html.replace(/^\- (.*$)/gm, '<li>$1</li>');
-        // Wrap contiguous <li> groups in <ul>
-        html = html.replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>'); 
-        // Note: The above is a simple fix; for complex markdown, a library is better, 
-        // but this should fix the immediate 'no answer' rendering issue.
-
-        // 6. Line breaks
+        html = html.replace(/^\- (.*$)/gm, '<li style="margin-left: 20px; margin-top: 0.5rem; opacity: 0.9;">$1</li>');
         html = html.replace(/\n/g, '<br>');
 
         return html;
     }
 </script>
-
-<style>
-    @keyframes pulse {
-        0%, 100% { opacity: 0.4; }
-        50% { opacity: 1; }
-    }
-</style>
 {% endblock %}
 

@@ -1,53 +1,163 @@
 {% extends 'base.html' %}
 
-{% block title %}Register Candidate | Voter Vision AI{% endblock %}
+{% block title %}Register Asset | Voter Vision AI{% endblock %}
 
 {% block content %}
-<div style="max-width: 800px; margin: 0 auto;">
-    <div class="premium-card">
-        <div style="text-align: center; margin-bottom: 3rem;">
-            <div class="badge badge-primary" style="margin-bottom: 1rem;">NEW ENTRY</div>
-            <h1 class="gradient-text" style="font-size: 2.2rem; margin-bottom: 0.5rem;">Register Leader</h1>
-            <p>Input candidate data for deep AI analysis and public record verification.</p>
+<div class="reveal" style="max-width: 900px; margin: 0 auto;">
+    <div class="premium-card" style="padding: 4rem;">
+        <div style="text-align: center; margin-bottom: 4rem;">
+            <div class="badge badge-indigo" style="margin-bottom: 1.5rem;">SECURE ENTRY TERMINAL</div>
+            <h1 class="gradient-text" style="font-size: 3rem;">Register New Asset</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">Input political profile data for deep-dive synthesis and record verification.</p>
         </div>
         
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="asset-form">
             {% csrf_token %}
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
-                <div>
-                    <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Full Name</label>
-                    <input type="text" name="name" required placeholder="e.g. KP Sharma Oli" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="input-label">Full Name & Identifier</label>
+                    <input type="text" name="name" required placeholder="e.g. KP Sharma Oli" class="modern-input">
                 </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Political Party</label>
-                    <input type="text" name="party" required placeholder="e.g. CPN-UML" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'">
-                </div>
-            </div>
-
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Biometric Profile (Image)</label>
-                <div style="position: relative; overflow: hidden;">
-                    <input type="file" name="image" style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white;">
+                <div class="form-group">
+                    <label class="input-label">Political Affiliation</label>
+                    <input type="text" name="party" required placeholder="e.g. CPN-UML" class="modern-input">
                 </div>
             </div>
 
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Brief Biography</label>
-                <textarea name="bio" required rows="3" placeholder="Brief political career overview..." style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; resize: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'"></textarea>
+            <div class="form-group">
+                <label class="input-label">Visual Identification (Profile Image)</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" name="image" class="modern-input file-input">
+                    <div class="file-custom-placeholder">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <span>Click to upload identification photo</span>
+                    </div>
+                </div>
             </div>
 
-            <div style="margin-bottom: 2.5rem;">
-                <label style="display: block; margin-bottom: 0.75rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Past Records & Achievements (Target for AI Engine)</label>
-                <textarea name="past_work" required rows="5" placeholder="Detail past positions, completed projects, and public record data..." style="width: 100%; padding: 1rem; background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; color: white; outline: none; transition: border-color 0.3s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--glass-border)'"></textarea>
-                <p style="font-size: 0.75rem; color: var(--primary); margin-top: 0.75rem; font-weight: 600;">⚡ AI will automatically generate an integrity profile based on this input.</p>
+            <div class="form-group">
+                <label class="input-label">Strategic Biography Summary</label>
+                <textarea name="bio" required rows="3" placeholder="Brief political career trajectory and current standing..." class="modern-input modern-textarea"></textarea>
             </div>
 
-            <div style="display: flex; gap: 1rem; border-top: 1px solid var(--glass-border); padding-top: 2rem;">
-                <a href="{% url 'candidate-list' %}" class="btn-modern btn-outline" style="flex: 1; justify-content: center;">Abort</a>
-                <button type="submit" class="btn-modern btn-fill" style="flex: 2; justify-content: center;">Initialize AI Analysis</button>
+            <div class="form-group">
+                <label class="input-label">Public Records & Track Record (AI Ingestion Target)</label>
+                <textarea name="past_work" required rows="6" placeholder="Detail past positions, legislative impact, completed projects, and documented achievements..." class="modern-input modern-textarea"></textarea>
+                <div class="form-hint">
+                    <div class="status-dot accent" style="width: 8px; height: 8px;"></div>
+                    <span>AI Engine will synthesize this data to generate an objective integrity profile.</span>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'candidate-list' %}" class="btn-modern btn-outline" style="flex: 1;">ABORT ENTRY</a>
+                <button type="submit" class="btn-modern btn-primary" style="flex: 2;">INITIALIZE PROFILE SYNTHESIS</button>
             </div>
         </form>
     </div>
 </div>
+
+<style>
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2.5rem;
+    }
+
+    @media (max-width: 600px) {
+        .form-row { grid-template-columns: 1fr; }
+    }
+
+    .form-group {
+        margin-bottom: 2.5rem;
+    }
+
+    .input-label {
+        display: block;
+        margin-bottom: 0.8rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .modern-input {
+        width: 100%;
+        padding: 1.2rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-md);
+        color: white;
+        outline: none;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 1rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modern-input:focus {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.05);
+        box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .modern-textarea {
+        resize: none;
+        line-height: 1.6;
+    }
+
+    .file-upload-wrapper {
+        position: relative;
+        cursor: pointer;
+    }
+
+    .file-input {
+        opacity: 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        cursor: pointer;
+    }
+
+    .file-custom-placeholder {
+        padding: 2.5rem;
+        border: 2px dashed var(--glass-border);
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-dim);
+        transition: all 0.3s;
+    }
+
+    .file-upload-wrapper:hover .file-custom-placeholder {
+        border-color: var(--primary);
+        background: rgba(99, 102, 241, 0.02);
+        color: var(--primary);
+    }
+
+    .form-hint {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 4rem;
+        padding-top: 3rem;
+        border-top: 1px solid var(--glass-border);
+    }
+</style>
 {% endblock %}

@@ -192,32 +192,78 @@ def analysis_lab(request):
             logger.error(f"Lab Chat Error: {e}")
             return JsonResponse({'status': 'error', 'response': "The lab system is offline or overloaded."}, status=500)
 
-    # Initial Upload and PDF Processing
     analysis_result = None
+    candidates = Candidate.objects.all()
+    
     if request.method == 'POST':
         files = request.FILES.getlist('manifestos')
-        if files:
+        selected_candidate_ids = request.POST.getlist('selected_candidates')
+        
+        if files or selected_candidate_ids:
             documents = []
             context_for_session = ""
-            for f in files[:2]: # Limit to 2 for side-by-side
+            
+            # Process uploaded files
+            for f in files[:2]: 
                 try:
                     text = extract_text_from_pdf(f)
                     documents.append({'name': f.name, 'text': text})
-                    # Add to session context but limit total size to avoid session bloat
                     context_for_session += f"\nFILE: {f.name}\nCONTENT: {text[:10000]}\n"
                 except Exception as e:
                     logger.error(f"Error processing {f.name}: {e}")
             
-            # Persist
-            request.session['research_lab_context'] = context_for_session
-            request.session['research_lab_history'] = [] 
+            # Process selected candidates from DB
+            for cid in selected_candidate_ids:
+                try:
+                    candidate = Candidate.objects.get(id=cid)
+                    manifesto = candidate.manifestos.first() # Get the latest/first manifesto
+                    if manifesto and manifesto.pdf_file:
+                        text = extract_text_from_pdf(manifesto.pdf_file)
+                        documents.append({'name': f"Candidate: {candidate.name}", 'text': text})
+                        context_for_session += f"\nCANDIDATE: {candidate.name}\nCONTENT: {text[:10000]}\n"
+                except Exception as e:
+                    logger.error(f"Error processing candidate {cid}: {e}")
             
-            analysis_result = analyze_multiple_manifestos(documents)
-            request.session['research_lab_last_result'] = analysis_result
+            # Limit to top 2 documents total for meaningful comparison
+            documents = documents[:2]
             
-            messages.success(request, "Documents digitized and analyzed. You can now chat with the Lab AI.")
-            
+            if documents:
+                request.session['research_lab_context'] = context_for_session
+                request.session['research_lab_history'] = [] 
+                
+                analysis_result = analyze_multiple_manifestos(documents)
+                request.session['research_lab_last_result'] = analysis_result
+                
+                messages.success(request, f"Intelligence gathered for {len(documents)} documents. Analysis complete.")
+            else:
+                messages.warning(request, "No valid document data found.")
+
     return render(request, 'candidates/analysis_lab.html', {
-        'analysis_result': analysis_result or request.session.get('research_lab_last_result')
+        'analysis_result': analysis_result or request.session.get('research_lab_last_result'),
+        'candidates': candidates
+    })
+
+def dashboard_view(request):
+    """
+    The Command Center Dashboard: High-level overview of system intelligence.
+    """
+    total_candidates = Candidate.objects.count()
+    total_manifestos = Manifesto.objects.count()
+    recent_candidates = Candidate.objects.all().order_by('-id')[:3]
+    
+    stats = {
+        'total_assets': total_candidates,
+        'ingested_data': total_manifestos,
+        'queries_processed': 1250, # Static mock
+        'global_reach': 876, # Static mock
+    }
+    
+    # Get a featured candidate for the dashboard view
+    featured_candidate = Candidate.objects.filter(image__isnull=False).first() or Candidate.objects.first()
+    
+    return render(request, 'candidates/dashboard.html', {
+        'stats': stats,
+        'recent_candidates': recent_candidates,
+        'featured_candidate': featured_candidate
     })
 

@@ -1,243 +1,350 @@
 {% extends 'base.html' %}
 
-{% block title %}Manifesto Analysis Lab | Voter Vision AI{% endblock %}
+{% block title %}Research Lab | Voter Vision AI{% endblock %}
 
 {% block extra_css %}
 <style>
     .lab-grid {
         display: grid;
-        grid-template-columns: 450px 1fr;
-        gap: 3rem;
+        grid-template-columns: 400px 1fr;
+        gap: 4rem;
         align-items: start;
     }
 
-    .dual-upload-container {
+    @media (max-width: 1200px) {
+        .lab-grid { grid-template-columns: 1fr; gap: 3rem; }
+    }
+
+    /* Ingestion Section */
+    .ingestion-panel {
+        padding: 3rem;
+        background: var(--bg-surface);
+        border-radius: var(--radius-xl);
+        position: sticky;
+        top: calc(var(--nav-height) + 2rem);
+    }
+
+    .slot-group {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
+        margin-top: 1.5rem;
     }
 
     .upload-slot {
+        background: rgba(0, 0, 0, 0.2);
         border: 2px dashed var(--glass-border);
-        padding: 2rem;
-        border-radius: 20px;
+        padding: 2.5rem 1.5rem;
+        border-radius: var(--radius-lg);
         text-align: center;
-        background: rgba(255,255,255,0.01);
         cursor: pointer;
-        transition: all 0.3s;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
     }
 
     .upload-slot:hover {
         border-color: var(--primary);
         background: rgba(99, 102, 241, 0.05);
+        transform: translateY(-2px);
     }
 
     .upload-slot.has-file {
         border-color: var(--accent);
         background: rgba(16, 185, 129, 0.05);
+        border-style: solid;
     }
 
-    .upload-slot input {
-        display: none;
-    }
+    .upload-slot input { display: none; }
 
-    .slot-label {
-        font-size: 0.75rem;
+    .slot-tag {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        font-size: 0.6rem;
         font-weight: 800;
-        color: var(--primary);
+        color: var(--text-dim);
         text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 1rem;
-        display: block;
+        letter-spacing: 2px;
     }
 
-    .file-info {
-        display: none;
-        margin-top: 1rem;
-        font-size: 0.85rem;
-        color: var(--text-main);
-        font-weight: 600;
-    }
-
-    .upload-slot.has-file .file-info {
-        display: block;
-    }
-
-    .upload-slot.has-file .placeholder-info {
-        display: none;
-    }
-
-    .analysis-container {
-        min-height: 600px;
-        background: rgba(0,0,0,0.3);
+    .candidate-selector {
+        max-height: 250px;
+        overflow-y: auto;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 1rem;
+        border-radius: var(--radius-md);
         border: 1px solid var(--glass-border);
-        border-radius: 24px;
-        padding: 4px; 
-        position: relative;
-        box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        margin-bottom: 2.5rem;
+    }
+
+    .candidate-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .candidate-item:hover {
+        background: var(--glass-white);
+    }
+
+    /* Lab Hub Styling */
+    .lab-hub {
+        min-height: 750px;
+        background: var(--bg-card);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-xl);
         display: flex;
         flex-direction: column;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
     }
 
-    .report-overlay {
+    .report-display {
         flex: 1;
+        padding: 4rem;
         overflow-y: auto;
+        position: relative;
+    }
+
+    .report-content {
+        background: rgba(0, 0, 0, 0.2);
         padding: 3rem;
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary) transparent;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--glass-border);
+        line-height: 2;
+        font-size: 1.1rem;
+        color: #e2e8f0;
     }
 
-    /* Lab Chat UI - Distinct from main chat */
-    .lab-chat-section {
+    /* Lab Chat */
+    .analyst-chat {
+        background: rgba(5, 7, 10, 0.6);
         border-top: 1px solid var(--glass-border);
-        background: rgba(2, 6, 23, 0.8);
-        padding: 2rem;
-        border-radius: 0 0 24px 24px;
+        padding: 2.5rem;
     }
 
-    .lab-chat-messages {
-        max-height: 300px;
+    .chat-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 2rem;
+    }
+
+    .chat-box {
+        max-height: 350px;
         overflow-y: auto;
-        margin-bottom: 1.5rem;
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.2rem;
+        margin-bottom: 2rem;
+        padding-right: 1rem;
     }
 
-    .lab-msg {
-        padding: 1rem 1.25rem;
-        border-radius: 14px;
-        font-size: 0.9rem;
-        line-height: 1.5;
-        max-width: 90%;
+    .msg {
+        max-width: 85%;
+        padding: 1.2rem 1.6rem;
+        border-radius: 18px;
+        font-size: 0.95rem;
+        line-height: 1.6;
     }
 
-    .lab-msg-user { align-self: flex-end; background: var(--secondary); color: white; border-bottom-right-radius: 2px; }
-    .lab-msg-ai { align-self: flex-start; background: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--glass-border); border-bottom-left-radius: 2px; }
-
-    .lab-chat-input-area {
-        display: flex;
-        gap: 10px;
-        background: rgba(0,0,0,0.5);
-        padding: 8px 15px;
-        border-radius: 12px;
+    .msg-ai {
+        align-self: flex-start;
+        background: var(--bg-surface);
         border: 1px solid var(--glass-border);
+        border-bottom-left-radius: 4px;
+        color: var(--text-main);
     }
 
-    .lab-chat-input {
+    .msg-user {
+        align-self: flex-end;
+        background: var(--primary);
+        color: white;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+    }
+
+    .chat-input-container {
+        display: flex;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 8px 12px 8px 24px;
+        border-radius: 99px;
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s;
+    }
+
+    .chat-input-container:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .chat-input {
         flex: 1;
         background: transparent;
         border: none;
         color: white;
         outline: none;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
 
-    /* Loading Animation */
-    .lab-loader {
+    .send-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: none;
+    }
+
+    .send-btn:hover { transform: scale(1.05); background: #4f46e5; }
+
+    /* Keyframe Animations */
+    .research-loader {
         display: none;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         height: 100%;
-        gap: 2rem;
+        gap: 2.5rem;
     }
 
-    .dots { display: flex; gap: 8px; }
-    .dot {
-        width: 12px; height: 12px; background: var(--primary); border-radius: 50%;
-        animation: dotPulse 1.5s infinite ease-in-out;
+    .pulse-ring {
+        width: 80px; height: 80px;
+        border: 4px solid var(--primary);
+        border-radius: 50%;
+        animation: ringPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
     }
 
-    @keyframes dotPulse {
-        0%, 100% { transform: scale(0.5); opacity: 0.3; }
-        50% { transform: scale(1.3); opacity: 1; }
+    @keyframes ringPulse {
+        0% { transform: scale(0.8); opacity: 1; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+        70% { transform: scale(1.2); opacity: 0; box-shadow: 0 0 0 40px rgba(99, 102, 241, 0); }
+        100% { transform: scale(0.8); opacity: 0; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 4rem; text-align: center;">
-    <div class="badge badge-primary" style="margin-bottom: 1rem;">RESEARCH LABORATORY</div>
-    <h1 class="gradient-text" style="font-size: 3.5rem;">Document Intelligence Lab</h1>
-    <p>Upload and query specific Ghosada Patras in a strictly isolated environment.</p>
-</div>
-
-<div class="lab-grid">
-    <div class="premium-card">
-        <h3 style="color: white; margin-bottom: 2rem; font-size: 1.1rem; letter-spacing: 1px; text-transform: uppercase;">1. DATA INGESTION</h3>
-        
-        <form id="labIngestForm" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="dual-upload-container">
-                <div class="upload-slot" id="labSlot1" onclick="document.getElementById('labFile1').click()">
-                    <span class="slot-label">Core Document</span>
-                    <input type="file" name="manifestos" id="labFile1" accept=".pdf" onchange="handleLabFile(1)">
-                    <div class="placeholder-info">
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Select First PDF</p>
-                    </div>
-                    <div class="file-info" id="labInfo1"><span id="labName1"></span></div>
-                </div>
-
-                <div class="upload-slot" id="labSlot2" onclick="document.getElementById('labFile2').click()">
-                    <span class="slot-label">Comparison Document</span>
-                    <input type="file" name="manifestos" id="labFile2" accept=".pdf" onchange="handleLabFile(2)">
-                    <div class="placeholder-info">
-                        <p style="font-size: 0.8rem; opacity: 0.5;">Select Second PDF</p>
-                    </div>
-                    <div class="file-info" id="labInfo2"><span id="labName2"></span></div>
-                </div>
-            </div>
-
-            <button type="submit" id="labStartBtn" class="btn-modern btn-fill" style="width: 100%; margin-top: 3rem; justify-content: center; height: 60px;" disabled>
-                INITIALIZE RESEARCH
-            </button>
-        </form>
+<div class="reveal">
+    <div style="text-align: center; margin-bottom: 6rem;">
+        <div class="badge badge-indigo" style="margin-bottom: 1.5rem;">SECURE RESEARCH FACILITY</div>
+        <h1 class="gradient-text">Ghosada Intelligence Lab</h1>
+        <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto;">Execute isolated multi-document synthesis and strategic cross-referencing in real-time.</p>
     </div>
 
-    <div class="analysis-container">
-        {% if not analysis_result %}
-            <div id="labPlaceholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-                <h2 style="color: white; opacity: 0.3;">Waiting for Research Data...</h2>
-            </div>
+    <div class="lab-grid">
+        <!-- Ingestion Panel -->
+        <div class="premium-card ingestion-panel">
+            <h3 class="section-label">1. Primary Data Inputs</h3>
             
-            <div id="labLoader" class="lab-loader">
-                <div class="dots"><div class="dot"></div><div class="dot" style="animation-delay:0.2s"></div><div class="dot" style="animation-delay:0.4s"></div></div>
-                <p style="color: var(--primary); font-weight: 800; letter-spacing: 2px;">SECURE DATA PROCESSING</p>
-            </div>
-        {% else %}
-            <div class="report-overlay reveal">
-                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 2rem;">
-                    <div style="width: 15px; height: 15px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 15px var(--accent);"></div>
-                    <h2 style="margin: 0; color: white;">Laboratory Report (Pros/Cons)</h2>
-                </div>
+            <form id="labIngestForm" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
                 
-                <div style="color: var(--text-main); line-height: 1.8; font-size: 1rem; background: rgba(0,0,0,0.2); padding: 2rem; border-radius: 12px; border: 1px solid var(--glass-border);">
-                    {{ analysis_result|linebreaks }}
-                </div>
-            </div>
-
-            <!-- Lab-Specific Chat -->
-            <div class="lab-chat-section reveal" style="animation-delay: 0.3s;">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 1.5rem;">
-                    <div style="font-size: 0.7rem; color: var(--accent); border: 1px solid var(--accent); padding: 2px 8px; border-radius: 4px; font-weight: 800;">RESEARCH ANALYST MODE</div>
-                </div>
-                
-                <div class="lab-chat-messages" id="labChatBox">
-                    <div class="lab-msg lab-msg-ai">
-                        I have indexed the research documents. You may now query the internal data tables directly.
+                <div style="margin-bottom: 3rem;">
+                    <span style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 800; letter-spacing: 2px;">Asset Database Selection</span>
+                    <div class="candidate-selector" style="margin-top: 1rem;">
+                        {% for candidate in candidates %}
+                            <label class="candidate-item">
+                                <input type="checkbox" name="selected_candidates" value="{{ candidate.id }}" onchange="updateLabStatus()">
+                                <span style="font-size: 0.9rem; font-weight: 600;">{{ candidate.name }}</span>
+                            </label>
+                        {% empty %}
+                            <p style="font-size: 0.8rem; opacity: 0.5; padding: 1rem; text-align: center;">No assets found.</p>
+                        {% endfor %}
                     </div>
                 </div>
-                
-                <div class="lab-chat-input-area">
-                    <input type="text" id="labChatInput" class="lab-chat-input" placeholder="Query document details..." onkeypress="handleLabEnter(event)">
-                    <button onclick="executeLabSearch()" class="btn-modern btn-fill" style="padding: 5px 15px; background: var(--accent);">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </button>
+
+                <div>
+                    <span style="font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; font-weight: 800; letter-spacing: 2px;">Manual Source Ingestion</span>
+                    <div class="slot-group">
+                        <div class="upload-slot" id="labSlot1" onclick="document.getElementById('labFile1').click()">
+                            <span class="slot-tag">Slot A</span>
+                            <input type="file" name="manifestos" id="labFile1" accept=".pdf" onchange="handleLabFile(1)">
+                            <div class="placeholder-content" id="ph1">
+                                <i style="font-size: 1.5rem; color: var(--text-dim); margin-bottom: 0.5rem; display: block;">📂</i>
+                                <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">SELECT SOURCE PDF</p>
+                            </div>
+                            <div class="file-info" id="info1" style="display:none; font-size: 0.85rem; font-weight: 700; color: var(--accent);">✓ ASSET INGESTED</div>
+                        </div>
+
+                        <div class="upload-slot" id="labSlot2" onclick="document.getElementById('labFile2').click()">
+                            <span class="slot-tag">Slot B</span>
+                            <input type="file" name="manifestos" id="labFile2" accept=".pdf" onchange="handleLabFile(2)">
+                            <div class="placeholder-content" id="ph2">
+                                <i style="font-size: 1.5rem; color: var(--text-dim); margin-bottom: 0.5rem; display: block;">📂</i>
+                                <p style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">SELECT SOURCE PDF</p>
+                            </div>
+                            <div class="file-info" id="info2" style="display:none; font-size: 0.85rem; font-weight: 700; color: var(--accent);">✓ ASSET INGESTED</div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        {% endif %}
+
+                <button type="submit" id="labStartBtn" class="btn-modern btn-primary" style="width: 100%; margin-top: 3.5rem; padding: 16px;" disabled>
+                    INITIALIZE SYNTHESIS
+                </button>
+            </form>
+        </div>
+
+        <!-- Research Hub (Output) -->
+        <div class="lab-hub">
+            {% if not analysis_result %}
+                <div id="labPlaceholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4rem;">
+                    <div style="font-size: 5rem; margin-bottom: 2rem; opacity: 0.05; filter: grayscale(1);">🧬</div>
+                    <h2 style="color: white; opacity: 0.2; font-size: 1.5rem;">Awaiting Intelligence Parameters</h2>
+                    <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 1rem;">Select candidates or upload manifestos to begin multi-document analysis.</p>
+                </div>
+                
+                <div id="labLoader" class="research-loader">
+                    <div class="pulse-ring"></div>
+                    <div style="text-align: center;">
+                        <p style="color: var(--primary); font-weight: 800; letter-spacing: 4px; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem;">Isolated Synthesis Active</p>
+                        <p style="color: var(--text-dim); font-size: 0.75rem;">Cross-referencing ghosada patterns...</p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="report-display reveal">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 3rem;">
+                        <div class="status-dot accent"></div>
+                        <h2 style="margin: 0; font-size: 1.8rem;">Integrated Laboratory Report</h2>
+                    </div>
+                    
+                    <div class="report-content">
+                        {{ analysis_result|linebreaks }}
+                    </div>
+                </div>
+
+                <!-- Analyst Chat -->
+                <div class="analyst-chat reveal" style="animation-delay: 0.3s;">
+                    <div class="chat-header">
+                        <div class="badge badge-rose">Analyst Query Mode</div>
+                        <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 700;">Live Session: Document Index v4.1</span>
+                    </div>
+                    
+                    <div class="chat-box" id="labChatBox">
+                        <div class="msg msg-ai">
+                            Intelligence indexed successfully. I am ready for targeted document cross-referencing or specific profile queries based on the ingested data.
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <input type="text" id="labChatInput" class="chat-input" placeholder="Query specific metrics or cross-referencing..." onkeypress="handleLabEnter(event)">
+                        <button onclick="executeLabSearch()" class="send-btn">
+                            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
 
@@ -245,12 +352,23 @@
     function handleLabFile(num) {
         const input = document.getElementById('labFile' + num);
         const slot = document.getElementById('labSlot' + num);
-        const name = document.getElementById('labName' + num);
+        const info = document.getElementById('info' + num);
+        const ph = document.getElementById('ph' + num);
+        
         if (input.files[0]) {
             slot.classList.add('has-file');
-            name.textContent = "✓ Ingested: " + input.files[0].name;
-            document.getElementById('labStartBtn').disabled = false;
+            ph.style.display = 'none';
+            info.style.display = 'block';
+            updateLabStatus();
         }
+    }
+
+    function updateLabStatus() {
+        const file1 = document.getElementById('labFile1').files.length;
+        const file2 = document.getElementById('labFile2').files.length;
+        const selected = document.querySelectorAll('input[name="selected_candidates"]:checked').length;
+        
+        document.getElementById('labStartBtn').disabled = (file1 + file2 + selected) === 0;
     }
 
     document.getElementById('labIngestForm').onsubmit = function() {
@@ -282,14 +400,14 @@
             const data = await response.json();
             appendLabUI(data.response, 'ai');
         } catch (e) {
-            appendLabUI("Connection link failure.", 'ai');
+            appendLabUI("Signal degradation: Link failed.", 'ai');
         }
     }
 
     function appendLabUI(text, sender) {
         const box = document.getElementById('labChatBox');
         const div = document.createElement('div');
-        div.className = `lab-msg lab-msg-${sender}`;
+        div.className = `msg msg-${sender}`;
         div.innerHTML = text.replace(/\n/g, '<br>');
         box.appendChild(div);
         box.scrollTop = box.scrollHeight;

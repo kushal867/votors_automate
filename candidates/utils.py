@@ -13,20 +13,31 @@ logger = logging.getLogger(__name__)
 
 def web_search(query):
     """
-    Performs a web search using DuckDuckGo with a timeout/limit.
+    Performs a web search with multi-attempt fallback.
     """
-    try:
-        # Using a context manager for DDGS to ensure cleanup
-        with DDGS(timeout=10) as ddgs:
-            results = list(ddgs.text(query, max_results=3))
-            if not results:
-                return "No real-time web results found for this query."
+    queries_to_try = [query]
+    # If query is too long or specific, try a broader one as fallback
+    if len(query.split()) > 5:
+        queries_to_try.append(" ".join(query.split()[:4]))
+
+    for q in queries_to_try:
+        try:
+            print(f"DEBUG: Attempting Web Intelligence Search for: {q}")
+            with DDGS(timeout=15) as ddgs:
+                # Get results and convert to list immediately 
+                results = [r for r in ddgs.text(q, max_results=5)]
+                
+                if results:
+                    search_context = "\n".join([
+                        f"Title: {r.get('title')}\nSnippet: {r.get('body')}\nSource: {r.get('href')}" 
+                        for r in results if r.get('body')
+                    ])
+                    return search_context
+        except Exception as e:
+            logger.error(f"Search attempt failed for '{q}': {str(e)}")
+            continue
             
-            search_context = "\n".join([f"Title: {r.get('title')}\nSnippet: {r.get('body')}\nSource: {r.get('href')}" for r in results])
-            return search_context
-    except Exception as e:
-        logger.error(f"Search Error: {str(e)}")
-        return f"Search service temporarily unavailable: {str(e)}"
+    return "Operational Status: Real-time search returned zero hits. AI-Internal knowledge required."
 
 def get_ai_response(prompt, system_instruction=None):
     """
@@ -214,12 +225,13 @@ def get_chatbot_response(user_query, context_data, history=None, web_results=Non
 
     prompt = f"""
     INTELLECTUAL PRIORITY:
-    1. PRIMARY SOURCE: Real-time Web Search Results (Highest priority for currency and breadth).
-    2. SECONDARY SOURCE: Local Verified Database (Use ONLY for specific record validation).
+    1. PRIMARY SOURCE: Real-time Web Search Results [WEB].
+    2. SECONDARY SOURCE: Local Database Records [DB].
+    3. FOUNDATIONAL: Your high-level internal training knowledge about Nepali politics [AI].
     
     KNOWLEDGE CONTEXT:
     --- [WEB] REAL-TIME RESEARCH ---
-    {web_results or 'No web results available for this query.'}
+    {web_results or 'Web Intelligence currently unreachable.'}
     
     --- [DB] LOCAL VERIFIED RECORDS ---
     {context_data or 'No local matching records found.'}
@@ -230,12 +242,11 @@ def get_chatbot_response(user_query, context_data, history=None, web_results=Non
     USER QUERY: {user_query}
     
     INSTRUCTIONS:
-    - Treat [WEB] results as your most current and vital intelligence source.
-    - If [WEB] results are unavailable or show an error, you may use your internal training knowledge about Nepali politics and history to answer, but specify that this is from your general knowledge base and not a live search.
-    - Mention [DB] data only if the user asks for specific records we have in our local database.
-    - If there is a conflict between sources, prioritize the most recent or logical one.
-    - Cite sources clearly as [WEB], [DB], or [AI-INTERNAL].
-    - Always respond in a way that helps the voter, even if search results are thin.
+    - You MUST provide a direct and helpful answer to the user query.
+    - Even if [WEB] results are thin or empty, DO NOT stop. Use your extensive [AI] internal knowledge to give a detailed response.
+    - Cite sources clearly as [WEB], [DB], or [AI].
+    - Your goal is to be the ultimate election resource for Nepal.
+    - Never say "I don't have information" if the topic is a known public figure in Nepal.
     """
     
     return get_ai_response(prompt, system_msg)
