@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.db import models
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.http import JsonResponse
@@ -48,6 +49,27 @@ class CandidateCreateView(CreateView):
         except Exception as e:
             logger.error(f"Error analyzing candidate data: {e}")
         return response
+
+class CandidateUpdateView(UpdateView):
+    model = Candidate
+    fields = ['name', 'party', 'image', 'bio', 'past_work', 'is_active', 'is_featured']
+    template_name = 'candidates/candidate_form.html'
+    success_url = reverse_lazy('candidate-list')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if 'past_work' in form.changed_data:
+            try:
+                self.object.ai_work_analysis = analyze_candidate_data(self.object)
+                self.object.save()
+            except Exception as e:
+                logger.error(f"Error re-analyzing candidate data: {e}")
+        return response
+
+class CandidateDeleteView(DeleteView):
+    model = Candidate
+    template_name = 'candidates/candidate_confirm_delete.html'
+    success_url = reverse_lazy('candidate-list')
 
 def upload_manifesto(request, candidate_id):
     candidate = get_object_or_404(Candidate, id=candidate_id)
@@ -146,6 +168,21 @@ def compare_candidates(request):
         'ai_comparison': ai_comparison
     })
 
+def global_search(request):
+    query = request.GET.get('q', '').strip()
+    candidates = []
+    if query:
+        candidates = Candidate.objects.filter(
+            models.Q(name__icontains=query) | 
+            models.Q(party__icontains=query) |
+            models.Q(bio__icontains=query)
+        )
+    return render(request, 'candidates/candidate_list.html', {
+        'candidates': candidates,
+        'search_query': query,
+        'is_search': True
+    })
+
 def analysis_lab(request):
     """
     The Research Lab: Independent document analysis with context-aware chat.
@@ -195,6 +232,14 @@ def analysis_lab(request):
     analysis_result = None
     candidates = Candidate.objects.all()
     
+    # Action: Clear History
+    if request.GET.get('clear') == '1':
+        request.session['research_lab_history'] = []
+        request.session['research_lab_context'] = ""
+        request.session['research_lab_last_result'] = None
+        messages.info(request, "Research lab context cleared.")
+        return redirect('analysis-lab')
+
     if request.method == 'POST':
         files = request.FILES.getlist('manifestos')
         selected_candidate_ids = request.POST.getlist('selected_candidates')
@@ -245,25 +290,44 @@ def analysis_lab(request):
 
 def dashboard_view(request):
     """
-    The Command Center Dashboard: High-level overview of system intelligence.
+    The Command Center Dashboard: High-level overview of system intelligence with live data.
     """
     total_candidates = Candidate.objects.count()
     total_manifestos = Manifesto.objects.count()
-    recent_candidates = Candidate.objects.all().order_by('-id')[:3]
+    recent_candidates = Candidate.objects.all().order_by('-id')[:5]
+    
+    # Real-ish activity feed
+    activities = []
+    for cand in recent_candidates:
+        activities.append({
+            'type': 'Candidate Added',
+            'detail': f"{cand.name} ({cand.party}) registered",
+            'time': cand.created_at
+        })
     
     stats = {
         'total_assets': total_candidates,
         'ingested_data': total_manifestos,
-        'queries_processed': 1250, # Static mock
-        'global_reach': 876, # Static mock
+        'queries_processed': 1250 + (total_candidates * 10), # Dynamic mock
+        'global_reach': 876 + total_manifestos, # Dynamic mock
     }
     
     # Get a featured candidate for the dashboard view
-    featured_candidate = Candidate.objects.filter(image__isnull=False).first() or Candidate.objects.first()
+    featured_candidate = Candidate.objects.filter(is_featured=True).first() or \
+                         Candidate.objects.filter(image__isnull=False).first() or \
+                         Candidate.objects.first()
     
+    # Calculate Province Distribution for the map
+    province_counts = Candidate.objects.values('province').annotate(count=models.Count('province'))
+    province_stats = {str(i): 0 for i in range(1, 8)}
+    for p in province_counts:
+        province_stats[p['province']] = p['count']
+
     return render(request, 'candidates/dashboard.html', {
         'stats': stats,
         'recent_candidates': recent_candidates,
-        'featured_candidate': featured_candidate
+        'featured_candidate': featured_candidate,
+        'activities': sorted(activities, key=lambda x: x['time'], reverse=True),
+        'province_stats': province_stats
     })
 

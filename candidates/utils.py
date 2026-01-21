@@ -72,7 +72,8 @@ def get_ai_response(prompt, system_instruction=None):
     try:
         genai.configure(api_key=settings.GEMINI_API_KEY)
         # Use models from available_models.txt
-        models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-pro']
+        # Use latest high-performance models
+        models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-pro']
         
         for model_name in models_to_try:
             try:
