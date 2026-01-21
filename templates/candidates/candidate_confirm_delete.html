@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Deletion | Voter Vision AI{% endblock %}
+
+{% block content %}
+<div class="reveal" style="max-width: 600px; margin: 4rem auto;">
+    <div class="premium-card" style="padding: 4rem; border-color: var(--secondary);">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <div class="badge badge-rose" style="margin-bottom: 1.5rem;">CRITICAL ACTION</div>
+            <h1 class="gradient-text" style="font-size: 2.5rem;">Purge Asset Data?</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem; margin-top: 1rem;">
+                Are you sure you want to permanently delete <span style="color: white; font-weight: 800;">{{ object.name }}</span> from the intelligence database?
+            </p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display: flex; gap: 1.5rem;">
+                <a href="{% url 'candidate-detail' object.id %}" class="btn-modern btn-outline" style="flex: 1;">ABORT</a>
+                <button type="submit" class="btn-modern btn-secondary" style="flex: 1; background: var(--secondary);">CONFIRM PURGE</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

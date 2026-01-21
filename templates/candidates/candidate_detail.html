@@ -5,12 +5,26 @@
 {% block content %}
 <div class="reveal">
     <!-- Breadcrumb / Header Over -->
-    <div style="margin-bottom: 3rem; display: flex; align-items: center; gap: 1rem;">
-        <a href="{% url 'candidate-list' %}" class="btn-modern btn-outline" style="padding: 8px 16px; border-radius: 99px; font-size: 0.7rem;">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
-            Back to Database
-        </a>
-        <div class="badge badge-rose">Restricted Intelligence</div>
+    <div style="margin-bottom: 3rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="{% url 'candidate-list' %}" class="btn-modern btn-outline" style="padding: 8px 16px; border-radius: 99px; font-size: 0.7rem;">
+                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                Back to Database
+            </a>
+            {% if candidate.is_active %}
+                <div class="badge badge-emerald">Operational Asset</div>
+            {% else %}
+                <div class="badge badge-rose">Inactive Asset</div>
+            {% endif %}
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'candidate-edit' candidate.id %}" class="btn-modern btn-outline" style="font-size: 0.7rem;">
+                <i>✎</i> EDIT PROFILE
+            </a>
+            <a href="{% url 'candidate-delete' candidate.id %}" class="btn-modern btn-outline" style="font-size: 0.7rem; color: var(--secondary); border-color: rgba(255, 0, 85, 0.2);">
+                <i>🗑</i> PURGE ASSET
+            </a>
+        </div>
     </div>
 
     <div class="detail-grid">
@@ -294,6 +308,18 @@
         .detail-grid { grid-template-columns: 1fr; gap: 3rem; }
         .profile-sidebar { position: relative; top: 0; }
         .profile-image-container { height: 400px; }
+    }
+
+    @media (max-width: 768px) {
+        .profile-image-container { height: 320px; }
+        .profile-details { padding: 1.5rem; }
+        .analysis-panel { padding: 1.5rem; }
+        .ghosada-card { padding: 1.5rem; }
+        .ghosada-content { padding: 1rem; font-size: 1rem; }
+        .ghosada-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+        .section-header h2 { font-size: 1.4rem; }
+        .intelligence-stream { gap: 3rem; }
+        .analysis-content { font-size: 1rem; line-height: 1.8; }
     }
 </style>
 {% endblock %}

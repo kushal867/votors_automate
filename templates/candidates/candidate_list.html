@@ -5,20 +5,27 @@
 {% block content %}
 <div class="reveal">
     <!-- Sophisticated Header -->
-    <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5rem;">
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 5rem; flex-wrap: wrap; gap: 2rem;">
         <div style="max-width: 600px;">
             <div class="badge badge-indigo" style="margin-bottom: 1.5rem;">SECURE DATABASE v3.0</div>
-            <h1 class="gradient-text">Political Assets</h1>
-            <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">
-                Exploring verified leadership profiles and strategic political maneuvers across Nepal's federal landscape.
-            </p>
+            {% if is_search %}
+                <h1 class="gradient-text list-title">Intelligence Search</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">
+                    Found {{ candidates|length }} assets matching query: <span style="color: white; font-weight: 800;">"{{ search_query }}"</span>
+                </p>
+            {% else %}
+                <h1 class="gradient-text list-title">Political Assets</h1>
+                <p style="color: var(--text-muted); font-size: 1.1rem; font-weight: 500;">
+                    Exploring verified leadership profiles and strategic political maneuvers across Nepal's federal landscape.
+                </p>
+            {% endif %}
         </div>
-        <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem;">
-            <button onclick="document.getElementById('compareForm').submit()" class="btn-modern btn-outline">
+        <div class="header-actions" style="display: flex; gap: 1rem; margin-bottom: 0.5rem; width: 100%; max-width: 400px;">
+            <button onclick="document.getElementById('compareForm').submit()" class="btn-modern btn-outline" style="flex: 1;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                Compare Selection
+                Compare
             </button>
-            <a href="{% url 'candidate-add' %}" class="btn-modern btn-primary">
+            <a href="{% url 'candidate-add' %}" class="btn-modern btn-primary" style="flex: 1;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
                 New Asset
             </a>
@@ -26,7 +33,7 @@
     </div>
 
     <form id="compareForm" action="{% url 'compare-candidates' %}" method="get">
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 3rem;">
+        <div class="candidate-grid">
             {% for candidate in candidates %}
             <div class="premium-card candidate-card">
                 <!-- Select Toggle Overlay -->
@@ -51,6 +58,9 @@
                         <div class="badge badge-rose" style="backdrop-filter: blur(8px); border-color: rgba(244, 63, 94, 0.4);">
                             {{ candidate.party }}
                         </div>
+                        {% if candidate.is_featured %}
+                            <div class="badge badge-gold" style="background: rgba(255, 204, 0, 0.1); color: var(--gold); border: 1px solid var(--gold); margin-left: 0.5rem; backdrop-filter: blur(8px);">FEATURED</div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -65,8 +75,14 @@
                     </div>
                     
                     <div class="card-actions">
-                        <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline" style="flex: 1;">ANALYZE</a>
-                        <a href="{% url 'upload-manifesto' candidate.id %}" class="btn-modern btn-secondary" style="flex: 1;">INGEST GHOSADA</a>
+                        <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline" style="flex: 1.5;">ANALYZE</a>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{% url 'candidate-edit' candidate.id %}" class="btn-modern btn-outline" style="padding: 10px; min-width: 40px;" title="Edit Asset"><i>✎</i></a>
+                            <a href="{% url 'candidate-delete' candidate.id %}" class="btn-modern btn-outline" style="padding: 10px; min-width: 40px; color: var(--secondary); border-color: rgba(255, 0, 85, 0.2);" title="Delete Asset"><i>🗑</i></a>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <a href="{% url 'upload-manifesto' candidate.id %}" class="btn-modern btn-secondary" style="width: 100%;">INGEST GHOSADA</a>
                     </div>
                 </div>
             </div>
@@ -211,6 +227,35 @@
 
     .custom-checkbox input:checked ~ .checkmark:after {
         display: block;
+    }
+
+    /* Responsive Adjustments */
+    .candidate-grid {
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); 
+        gap: 3rem;
+    }
+
+    @media (max-width: 768px) {
+        .candidate-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        .header-section {
+            margin-bottom: 3rem !important;
+        }
+        .list-title {
+            font-size: 2.5rem !important;
+        }
+        .header-actions {
+            max-width: 100% !important;
+        }
+        .card-visual {
+            height: 220px;
+        }
+        .card-body {
+            padding: 1.5rem;
+        }
     }
 </style>
 {% endblock %}

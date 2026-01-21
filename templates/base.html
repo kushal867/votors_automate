@@ -248,15 +248,92 @@
         /* Responsive Breakpoints */
         @media (max-width: 1200px) {
             :root { --sidebar-width: 80px; }
-            .brand-name, .nav-item span { display: none; }
+            .brand-name, .nav-item span, .sidebar-brand .brand-name { display: none; }
             .nav-item { justify-content: center; padding: 1rem; }
             .main-content { margin-left: 80px; padding: 1.5rem 2rem; }
+            .sidebar-brand { justify-content: center; padding: 0; }
         }
 
         @media (max-width: 768px) {
-             .sidebar { display: none; }
-             .main-content { margin-left: 0; padding: 1.5rem; }
-             .search-console { width: 100%; }
+            :root { 
+                --sidebar-width: 280px; 
+                --topbar-height: 70px;
+            }
+            .sidebar { 
+                transform: translateX(-100%);
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex;
+                width: var(--sidebar-width);
+                z-index: 2000;
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .brand-name, .nav-item span { display: flex; }
+            .sidebar-brand { justify-content: flex-start; padding: 0 1rem; }
+            
+            .main-content { margin-left: 0; padding: 1rem; padding-top: calc(var(--topbar-height) + 1rem); }
+            
+            .topbar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: rgba(6, 9, 18, 0.95);
+                backdrop-filter: blur(10px);
+                z-index: 1500;
+                padding: 0 1.5rem;
+                margin-bottom: 0;
+                border-bottom: 1px solid var(--glass-border);
+            }
+            
+            .search-console { 
+                display: none; /* Hide global search on mobile to save space, or make it a button */
+            }
+            
+            .mobile-toggle {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                background: var(--glass-highlight);
+                border-radius: 10px;
+                cursor: pointer;
+                color: white;
+            }
+            
+            .mobile-toggle i {
+                font-size: 1.5rem;
+                font-style: normal;
+                line-height: 1;
+            }
+
+            h1 { font-size: 2.2rem; }
+            h2 { font-size: 1.8rem; }
+        }
+
+        .mobile-toggle { display: none; }
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1999;
+            display: none;
+        }
+        .sidebar-overlay.active { display: block; }
+
+        /* Mobile Topbar UI */
+        .mobile-brand {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .mobile-brand { display: flex; }
+            .user-actions { gap: 1rem; }
+            .profile-bubble { width: 35px; height: 35px; }
         }
 
         /* Premium Scrollbar */
@@ -417,6 +494,12 @@
             color: #00ff88; 
             border: 1px solid rgba(0, 255, 136, 0.3); 
         }
+        
+        .badge-gold { 
+            background: rgba(255, 204, 0, 0.1); 
+            color: #ffcc00; 
+            border: 1px solid rgba(255, 204, 0, 0.3); 
+        }
 
         /* Section Label */
         .section-label {
@@ -432,6 +515,7 @@
 </head>
 <body>
     <div class="mountain-bg"></div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
@@ -452,6 +536,9 @@
             </a>
             <a href="{% url 'analysis-lab' %}" class="nav-item">
                 <i>🧪</i> <span>Ghosada Lab</span>
+            </a>
+            <a href="{% url 'analysis-lab' %}?clear=1" class="nav-item" style="opacity: 0.5; font-size: 0.8rem; margin-top: -0.5rem; margin-left: 2.5rem;">
+                <i>🧹</i> <span>Reset Lab</span>
             </a>
             <a href="{% url 'compare-candidates' %}" class="nav-item">
                 <i>⚖️</i> <span>Differentiation</span>
@@ -475,10 +562,19 @@
     <main class="main-content">
         <!-- Top Interface -->
         <header class="topbar">
-            <div class="search-console">
-                <i>🔍</i>
-                <input type="text" placeholder="Query political entities or manifestos...">
+            <div class="mobile-toggle" id="sidebarToggle">
+                <i>☰</i>
             </div>
+            
+            <div class="mobile-brand">
+                <div class="brand-icon" style="width: 30px; height: 30px; font-size: 0.8rem;">🇳🇵</div>
+                <span class="traditional-font" style="font-size: 1rem;">वोटर विजन</span>
+            </div>
+
+            <form action="{% url 'global-search' %}" method="get" class="search-console">
+                <i>🔍</i>
+                <input type="text" name="q" value="{{ search_query|default:'' }}" placeholder="Query political entities or manifestos...">
+            </form>
 
             <div class="user-actions">
                 <div class="icon-btn"><i>🔔</i></div>
@@ -518,6 +614,25 @@
                 item.classList.add('active');
             }
         });
+
+        // Mobile Sidebar Toggle
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+        }
+
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
     </script>
     {% block extra_js %}{% endblock %}
 </body>

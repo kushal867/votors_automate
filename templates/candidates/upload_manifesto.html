@@ -80,11 +80,11 @@
         box-shadow: 0 0 30px var(--primary-glow);
     }
 
-    .action-bar {
-        display: flex;
-        gap: 1.5rem;
-        padding-top: 3rem;
-        border-top: 1px solid var(--glass-border);
+    @media (max-width: 768px) {
+        .premium-card { padding: 2rem !important; }
+        .ingestion-zone { padding: 3rem 1.5rem; }
+        .action-bar { flex-direction: column; gap: 1rem; }
+        .action-bar button, .action-bar a { width: 100%; flex: none !important; }
     }
 </style>
 

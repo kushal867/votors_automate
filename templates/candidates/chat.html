@@ -15,6 +15,18 @@
 
     @media (max-width: 1200px) {
         .strategic-layout { grid-template-columns: 1fr; gap: 4rem; text-align: center; }
+        .hero-image { max-width: 400px; margin: 0 auto; }
+        .command-console { height: 600px; }
+    }
+
+    @media (max-width: 768px) {
+        .strategic-layout { gap: 2.5rem; padding-top: 1rem; }
+        .command-console { height: 550px; border-radius: var(--radius-lg); }
+        .message-stream { padding: 1.5rem; gap: 1.5rem; }
+        .msg-bubble { max-width: 95%; padding: 1rem 1.25rem; font-size: 0.9rem; }
+        .console-input-area { padding: 1.25rem; }
+        .hero-image { max-width: 280px; }
+        h1 { font-size: 2.5rem !important; }
     }
 
     /* Left Side: Strategic Insight */

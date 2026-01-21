@@ -5,9 +5,9 @@
 {% block content %}
 <div class="dashboard-wrapper">
     <!-- Header Summary -->
-    <div style="margin-bottom: 3.5rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div class="dashboard-header" style="margin-bottom: 3.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem;">
         <div>
-            <h2 class="traditional-font" style="font-size: 3.2rem; margin-bottom: 0.5rem;">नेपाल निर्वाचन खुफिया</h2>
+            <h2 class="traditional-font main-title" style="font-size: 3.2rem; margin-bottom: 0.5rem;">नेपाल निर्वाचन खुफिया</h2>
             <p style="color: var(--text-muted); font-size: 1.15rem; font-weight: 500; letter-spacing: 0.5px;">National Strategic Command Center — Real-time Intelligence Synthesis</p>
         </div>
         <div class="dashboard-date" style="text-align: right; color: var(--text-dim); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
@@ -90,14 +90,40 @@
             </div>
             <div class="map-viewport">
                 <svg viewBox="0 0 800 450" class="neon-map">
-                    <!-- Accurate-ish Nepal Outline with Districts -->
+                    <!-- Nepal Outline -->
                     <path d="M50,150 L250,100 L500,80 L780,120 L800,300 L750,380 L550,420 L300,430 L50,380 Z" fill="rgba(67, 97, 238, 0.05)" stroke="var(--primary)" stroke-width="2" />
-                    <circle cx="200" cy="220" r="12" fill="var(--secondary)" class="map-node" />
-                    <circle cx="200" cy="220" r="25" fill="none" stroke="var(--secondary)" stroke-width="1" class="ping" />
-                    <circle cx="450" cy="180" r="8" fill="var(--secondary)" class="map-node" />
-                    <circle cx="650" cy="250" r="10" fill="var(--secondary)" class="map-node" />
+                    
+                    <!-- Province Indicators (Positions are roughly approximated) -->
+                    <g class="map-target" title="Sudurpashchim">
+                        <circle cx="120" cy="220" r="{% if province_stats.7 %}{{ province_stats.7|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="120" y="250" fill="var(--text-dim)" font-size="10">P.7: {{ province_stats.7 }}</text>
+                    </g>
+                    <g class="map-target" title="Karnali">
+                        <circle cx="250" cy="200" r="{% if province_stats.6 %}{{ province_stats.6|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="250" y="230" fill="var(--text-dim)" font-size="10">P.6: {{ province_stats.6 }}</text>
+                    </g>
+                    <g class="map-target" title="Lumbini">
+                        <circle cx="350" cy="300" r="{% if province_stats.5 %}{{ province_stats.5|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="350" y="330" fill="var(--text-dim)" font-size="10">P.5: {{ province_stats.5 }}</text>
+                    </g>
+                    <g class="map-target" title="Gandaki">
+                        <circle cx="450" cy="180" r="{% if province_stats.4 %}{{ province_stats.4|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="450" y="210" fill="var(--text-dim)" font-size="10">P.4: {{ province_stats.4 }}</text>
+                    </g>
+                    <g class="map-target" title="Bagmati">
+                        <circle cx="550" cy="220" r="{% if province_stats.3 %}{{ province_stats.3|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="550" y="250" fill="var(--text-dim)" font-size="10">P.3: {{ province_stats.3 }}</text>
+                    </g>
+                    <g class="map-target" title="Madhesh">
+                        <circle cx="650" cy="320" r="{% if province_stats.2 %}{{ province_stats.2|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="650" y="350" fill="var(--text-dim)" font-size="10">P.2: {{ province_stats.2 }}</text>
+                    </g>
+                    <g class="map-target" title="Koshi">
+                        <circle cx="720" cy="220" r="{% if province_stats.1 %}{{ province_stats.1|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
+                        <text x="720" y="250" fill="var(--text-dim)" font-size="10">P.1: {{ province_stats.1 }}</text>
+                    </g>
                 </svg>
-                <div class="caption-overlay">SENSITIVITY: HIGH / TARGET LOCK ACTIVE</div>
+                <div class="caption-overlay">SENSITIVITY: HIGH / LIVE ASSET HOTSPOTS</div>
             </div>
         </div>
 
@@ -186,25 +212,21 @@
         </div>
 
         <div class="glass-card profile-feed">
-            <h3 class="box-title">Latest Intelligence Briefs</h3>
+            <h3 class="box-title">System Activity Flow</h3>
             <div class="feed-container">
-                {% for cand in recent_candidates %}
+                {% for activity in activities %}
                 <div class="feed-entry">
                     <div class="entry-avatar">
-                        {% if cand.image %}<img src="{{ cand.image.url }}">{% else %}<span>🇳🇵</span>{% endif %}
+                        {% if activity.type == 'Candidate Added' %}⚡{% else %}📡{% endif %}
                     </div>
                     <div class="entry-meta">
-                        <div class="e-name">{{ cand.name }}</div>
-                        <div class="e-sub">{{ cand.party }}</div>
+                        <div class="e-name">{{ activity.type }}</div>
+                        <div class="e-sub">{{ activity.detail }}</div>
                     </div>
-                    {% if forloop.first %}
-                        <div class="e-tag status-high">+ 45.8%</div>
-                    {% else %}
-                        <div class="e-tag status-norm">{{ forloop.counter }}0.2%</div>
-                    {% endif %}
+                    <div class="e-tag status-norm">{{ activity.time|timesince }} ago</div>
                 </div>
                 {% empty %}
-                <div style="padding: 2rem; text-align: center; color: var(--text-dim);">No briefs available.</div>
+                <div style="padding: 2rem; text-align: center; color: var(--text-dim);">No recent activity detected.</div>
                 {% endfor %}
             </div>
         </div>
@@ -218,6 +240,24 @@
     .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.2rem; margin-bottom: 3.5rem; }
     .middle-grid { display: grid; grid-template-columns: 1fr 1fr 400px; gap: 2.2rem; margin-bottom: 3.5rem; }
     .bottom-grid { display: grid; grid-template-columns: 1fr 1fr 400px; gap: 2.2rem; }
+
+    @media (max-width: 1400px) {
+        .middle-grid, .bottom-grid { grid-template-columns: 1fr 1fr; }
+        .spotlight-card, .profile-feed { grid-column: span 2; }
+    }
+
+    @media (max-width: 1024px) {
+        .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+        .stat-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+        .middle-grid, .bottom-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+        .spotlight-card, .profile-feed { grid-column: span 1; }
+        .main-title { font-size: 2.2rem !important; }
+        .dashboard-header { flex-direction: column; align-items: flex-start !important; }
+        .dashboard-date { text-align: left !important; }
+    }
 
     /* Components */
     .box-title {
