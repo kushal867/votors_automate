@@ -49,3 +49,22 @@ class Manifesto(models.Model):
 
     def __str__(self):
         return f"Manifesto of {self.candidate.name}"
+
+class QueryLog(models.Model):
+    query = models.TextField()
+    response = models.TextField()
+    source = models.CharField(max_length=50, default='Chat') # e.g., 'Chat', 'Lab'
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Query at {self.timestamp}"
+
+class ResearchAnalysis(models.Model):
+    title = models.CharField(max_length=255)
+    documents_count = models.IntegerField(default=1)
+    analysis_content = models.TextField()
+    context_used = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Analysis: {self.title} ({self.created_at})"

@@ -7,7 +7,7 @@ from django.http import JsonResponse
 import json
 import logging
 
-from .models import Candidate, Manifesto
+from .models import Candidate, Manifesto, QueryLog, ResearchAnalysis
 from .utils import (
     analyze_candidate_data, 
     analyze_manifesto_vision, 
@@ -24,6 +24,19 @@ class CandidateListView(ListView):
     model = Candidate
     template_name = 'candidates/candidate_list.html'
     context_object_name = 'candidates'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        province = self.request.GET.get('province')
+        if province:
+            queryset = queryset.filter(province=province)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['provinces'] = Candidate.PROVINCE_CHOICES
+        context['selected_province'] = self.request.GET.get('province')
+        return context
 
 class CandidateDetailView(DetailView):
     model = Candidate
@@ -124,6 +137,9 @@ def chat_view(request):
             history.append({'role': 'user', 'content': user_query})
             history.append({'role': 'assistant', 'content': bot_response})
             request.session['chat_history'] = history[-10:] # Keep last 5 rounds
+
+            # 5. Log Query
+            QueryLog.objects.create(query=user_query, response=bot_response, source='Strategic Core')
             
             return JsonResponse({'status': 'success', 'response': bot_response})
             
@@ -224,6 +240,9 @@ def analysis_lab(request):
             lab_history.append({'role': 'assistant', 'content': response})
             request.session['research_lab_history'] = lab_history[-6:]
             
+            # Log Query
+            QueryLog.objects.create(query=user_query, response=response, source='Ghosada Lab Chat')
+
             return JsonResponse({'status': 'success', 'response': response})
         except Exception as e:
             logger.error(f"Lab Chat Error: {e}")
@@ -279,13 +298,23 @@ def analysis_lab(request):
                 analysis_result = analyze_multiple_manifestos(documents)
                 request.session['research_lab_last_result'] = analysis_result
                 
+                # Save Persistent Analysis
+                doc_titles = ", ".join([doc['name'] for doc in documents])
+                ResearchAnalysis.objects.create(
+                    title=f"Comparative Analysis: {doc_titles}",
+                    documents_count=len(documents),
+                    analysis_content=analysis_result,
+                    context_used=context_for_session[:5000] # Save first 5k chars of context
+                )
+
                 messages.success(request, f"Intelligence gathered for {len(documents)} documents. Analysis complete.")
             else:
                 messages.warning(request, "No valid document data found.")
 
     return render(request, 'candidates/analysis_lab.html', {
         'analysis_result': analysis_result or request.session.get('research_lab_last_result'),
-        'candidates': candidates
+        'candidates': candidates,
+        'previous_analyses': ResearchAnalysis.objects.all().order_by('-created_at')[:10]
     })
 
 def dashboard_view(request):
@@ -308,9 +337,18 @@ def dashboard_view(request):
     stats = {
         'total_assets': total_candidates,
         'ingested_data': total_manifestos,
-        'queries_processed': 1250 + (total_candidates * 10), # Dynamic mock
-        'global_reach': 876 + total_manifestos, # Dynamic mock
+        'queries_processed': QueryLog.objects.count(),
+        'global_reach': 876 + total_manifestos, # Placeholder
     }
+    
+    # Enrich activities with Query Logs
+    recent_queries = QueryLog.objects.all().order_by('-timestamp')[:5]
+    for q in recent_queries:
+        activities.append({
+            'type': 'Intelligence Query',
+            'detail': f"'{q.query[:30]}...' processed via {q.source}",
+            'time': q.timestamp
+        })
     
     # Get a featured candidate for the dashboard view
     featured_candidate = Candidate.objects.filter(is_featured=True).first() or \
