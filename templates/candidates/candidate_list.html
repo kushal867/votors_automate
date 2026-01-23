@@ -20,7 +20,13 @@
                 </p>
             {% endif %}
         </div>
-        <div class="header-actions" style="display: flex; gap: 1rem; margin-bottom: 0.5rem; width: 100%; max-width: 400px;">
+        <div class="header-actions" style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.5rem; width: 100%; max-width: 600px;">
+            <select onchange="location.href='?province=' + this.value" class="btn-modern btn-outline" style="flex: 1; text-align: left; appearance: none; -webkit-appearance: none;">
+                <option value="">All Provinces</option>
+                {% for code, name in provinces %}
+                    <option value="{{ code }}" {% if selected_province == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
             <button onclick="document.getElementById('compareForm').submit()" class="btn-modern btn-outline" style="flex: 1;">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                 Compare
