@@ -45,6 +45,10 @@ class CandidateDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Track engagement
+        self.object.view_count = models.F('view_count') + 1
+        self.object.save(update_fields=['view_count'])
+        
         context['manifestos'] = self.object.manifestos.all()
         return context
 
@@ -193,6 +197,8 @@ def global_search(request):
             models.Q(party__icontains=query) |
             models.Q(bio__icontains=query)
         )
+        # Track engagement for matched candidates
+        candidates.update(search_count=models.F('search_count') + 1)
     return render(request, 'candidates/candidate_list.html', {
         'candidates': candidates,
         'search_query': query,
@@ -361,11 +367,28 @@ def dashboard_view(request):
     for p in province_counts:
         province_stats[p['province']] = p['count']
 
+    # Popular Assets (Top Viewed)
+    popular_candidates = Candidate.objects.filter(is_active=True).order_by('-view_count')[:4]
+
+    # Trending Topics (Naive word frequency from QueryLog)
+    all_queries = QueryLog.objects.all().order_by('-timestamp')[:50].values_list('query', flat=True)
+    all_words = " ".join(all_queries).lower().split()
+    stopwords = {'the', 'a', 'is', 'in', 'and', 'to', 'of', 'for', 'nepal', 'who', 'what', 'how', 'is', 'the', 'candidate', 'manifesto'}
+    trending_words = {}
+    for word in all_words:
+        if len(word) > 3 and word not in stopwords:
+            trending_words[word] = trending_words.get(word, 0) + 1
+    
+    trending_topics = sorted(trending_words.items(), key=lambda x: x[1], reverse=True)[:5]
+    trending_topics = [t[0].capitalize() for t in trending_topics]
+
     return render(request, 'candidates/dashboard.html', {
         'stats': stats,
         'recent_candidates': recent_candidates,
+        'popular_candidates': popular_candidates,
         'featured_candidate': featured_candidate,
         'activities': sorted(activities, key=lambda x: x['time'], reverse=True),
-        'province_stats': province_stats
+        'province_stats': province_stats,
+        'trending_topics': trending_topics
     })
 
