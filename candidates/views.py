@@ -327,8 +327,12 @@ def dashboard_view(request):
     """
     The Command Center Dashboard: High-level overview of system intelligence with live data.
     """
+    from django.utils import timezone
+    from django.db.models import Sum
+
     total_candidates = Candidate.objects.count()
     total_manifestos = Manifesto.objects.count()
+    total_views = Candidate.objects.aggregate(total_views=Sum('view_count'))['total_views'] or 0
     recent_candidates = Candidate.objects.all().order_by('-id')[:5]
     
     # Real-ish activity feed
@@ -344,7 +348,9 @@ def dashboard_view(request):
         'total_assets': total_candidates,
         'ingested_data': total_manifestos,
         'queries_processed': QueryLog.objects.count(),
-        'global_reach': 876 + total_manifestos, # Placeholder
+        'global_reach': f"{total_views}+", # Live views from DB
+        'system_status': 'Fully Operational',
+        'last_sync': timezone.now().strftime("%Y.%m.%d %H:%M:%S")
     }
     
     # Enrich activities with Query Logs
@@ -371,16 +377,21 @@ def dashboard_view(request):
     popular_candidates = Candidate.objects.filter(is_active=True).order_by('-view_count')[:4]
 
     # Trending Topics (Naive word frequency from QueryLog)
-    all_queries = QueryLog.objects.all().order_by('-timestamp')[:50].values_list('query', flat=True)
+    all_queries = QueryLog.objects.all().order_by('-timestamp')[:100].values_list('query', flat=True)
     all_words = " ".join(all_queries).lower().split()
-    stopwords = {'the', 'a', 'is', 'in', 'and', 'to', 'of', 'for', 'nepal', 'who', 'what', 'how', 'is', 'the', 'candidate', 'manifesto'}
+    stopwords = {'the', 'a', 'is', 'in', 'and', 'to', 'of', 'for', 'nepal', 'who', 'what', 'how', 'is', 'the', 'candidate', 'manifesto', 'election', 'voter', 'vision'}
     trending_words = {}
     for word in all_words:
+        # Clean word (remove punctuation)
+        word = ''.join(e for e in word if e.isalnum())
         if len(word) > 3 and word not in stopwords:
             trending_words[word] = trending_words.get(word, 0) + 1
     
     trending_topics = sorted(trending_words.items(), key=lambda x: x[1], reverse=True)[:5]
     trending_topics = [t[0].capitalize() for t in trending_topics]
+
+    # Mock Sentiment Data for the chart
+    sentiment_data = [45, 60, 75, 40, 85, 95] # Could be tied to query frequency or keywords
 
     return render(request, 'candidates/dashboard.html', {
         'stats': stats,
@@ -389,6 +400,8 @@ def dashboard_view(request):
         'featured_candidate': featured_candidate,
         'activities': sorted(activities, key=lambda x: x['time'], reverse=True),
         'province_stats': province_stats,
-        'trending_topics': trending_topics
+        'trending_topics': trending_topics,
+        'sentiment_data': sentiment_data,
+        'current_time': timezone.now()
     })
 
