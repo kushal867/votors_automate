@@ -252,3 +252,31 @@ def get_chatbot_response(user_query, context_data, history=None, web_results=Non
     
     return get_ai_response(prompt, system_msg)
 
+def calculate_sentiment(text):
+    """
+    Analyzes sentiment of text and returns a score between -1.0 and 1.0.
+    In a production app, this would use a more advanced NLP model.
+    """
+    positive_keywords = {
+        'visionary', 'development', 'growth', 'integrity', 'reform', 'future', 
+        'progress', 'success', 'democracy', 'unity', 'hope', 'prosperous',
+        'better', 'improve', 'leadership', 'stable', 'positive'
+    }
+    negative_keywords = {
+        'corruption', 'crisis', 'failure', 'protest', 'violence', 'unstable',
+        'scandal', 'debt', 'inflation', 'poverty', 'strike', 'conflict',
+        'negative', 'worse', 'regret', 'warning', 'risk'
+    }
+    
+    words = re.findall(r'\w+', text.lower())
+    pos_count = sum(1 for w in words if w in positive_keywords)
+    neg_count = sum(1 for w in words if w in negative_keywords)
+    
+    total = pos_count + neg_count
+    if total == 0:
+        return 0.0
+    
+    # Return a score normalized between -1.0 and 1.0
+    return (pos_count - neg_count) / total
+
+

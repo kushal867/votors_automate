@@ -14,4 +14,5 @@ urlpatterns = [
     path('compare/', views.compare_candidates, name='compare-candidates'),
     path('search/', views.global_search, name='global-search'),
     path('analysis-lab/', views.analysis_lab, name='analysis-lab'),
+    path('candidate/<int:pk>/report/', views.candidate_report_view, name='candidate-report'),
 ]
