@@ -11,7 +11,8 @@
             <p style="color: var(--text-muted); font-size: 1.15rem; font-weight: 500; letter-spacing: 0.5px;">National Strategic Command Center — Real-time Intelligence Synthesis</p>
         </div>
         <div class="dashboard-date" style="text-align: right; color: var(--text-dim); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
-            System Active: 2026.01.19 <br> Status: Fully Operational
+            Sync: {{ stats.last_sync }} <br> 
+            Status: <span style="color: var(--accent);">{{ stats.system_status }}</span>
         </div>
     </div>
 
@@ -50,7 +51,7 @@
         <div class="glass-card stat-card glow-teal">
             <div class="stat-header">
                 <div class="stat-icon-box" style="background: rgba(0, 210, 255, 0.1); color: var(--teal);">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path></svg>
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9-9c1.657 0 3 4.03 3 9s-1.343 9-3 9m0-18c-1.657 0-3 4.03-3 9s1.343 9 3 9m-9-9a9 9 0 019-9"></path></svg>
                 </div>
                 <div class="tiny-sparkline">
                     <svg viewBox="0 0 100 30" width="80" height="25">
@@ -58,8 +59,8 @@
                     </svg>
                 </div>
             </div>
-            <div class="stat-value">6,000+</div>
-            <div class="stat-label">Encryption Nodes</div>
+            <div class="stat-value">{{ stats.global_reach }}</div>
+            <div class="stat-label">Global Pulse</div>
         </div>
 
         <div class="glass-card stat-card glow-gold">
@@ -216,12 +217,23 @@
         <div class="glass-card analytic-box">
             <h3 class="box-title">Network Sentiment Velocity</h3>
             <div class="bar-ensemble">
-                <div class="bar-wrapper"><div class="bar" style="height: 40%; --c: var(--secondary);"></div><span>JAN</span></div>
-                <div class="bar-wrapper"><div class="bar" style="height: 75%; --c: var(--primary);"></div><span>FEB</span></div>
-                <div class="bar-wrapper"><div class="bar" style="height: 55%; --c: var(--accent);"></div><span>MAR</span></div>
-                <div class="bar-wrapper"><div class="bar" style="height: 90%; --c: var(--gold);"></div><span>APR</span></div>
-                <div class="bar-wrapper"><div class="bar" style="height: 60%; --c: var(--teal);"></div><span>MAY</span></div>
-                <div class="bar-wrapper"><div class="bar" style="height: 85%; --c: var(--primary);"></div><span>JUN</span></div>
+                {% for val in sentiment_data %}
+                <div class="bar-wrapper">
+                    {% if forloop.counter == 1 %}
+                    <div class="bar" style="height: {{ val }}%; --c: var(--secondary);"></div><span>JAN</span>
+                    {% elif forloop.counter == 2 %}
+                    <div class="bar" style="height: {{ val }}%; --c: var(--primary);"></div><span>FEB</span>
+                    {% elif forloop.counter == 3 %}
+                    <div class="bar" style="height: {{ val }}%; --c: var(--accent);"></div><span>MAR</span>
+                    {% elif forloop.counter == 4 %}
+                    <div class="bar" style="height: {{ val }}%; --c: var(--gold);"></div><span>APR</span>
+                    {% elif forloop.counter == 5 %}
+                    <div class="bar" style="height: {{ val }}%; --c: var(--teal);"></div><span>MAY</span>
+                    {% elif forloop.counter == 6 %}
+                    <div class="bar" style="height: {{ val }}%; --c: var(--primary);"></div><span>JUN</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -261,10 +273,34 @@
                 {% endfor %}
             </div>
         </div>
+        <!-- Row 4: Strategic Intelligence Terminal -->
+    <div class="glass-card terminal-box" style="margin-top: 2.2rem; background: #000; border: 1px solid var(--primary); padding: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div class="status-dot" style="background: var(--accent); box-shadow: 0 0 10px var(--accent);"></div>
+                <h3 class="box-title" style="color: var(--primary);">System Intelligence Terminal [v4.0]</h3>
+            </div>
+            <div style="font-family: monospace; font-size: 0.7rem; color: var(--text-dim);">ENCRYPTED_LINK: ACTIVE</div>
+        </div>
+        <div class="terminal-content" style="font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--accent); height: 150px; overflow-y: auto; padding-right: 1rem;">
+            {% for activity in activities %}
+            <div class="terminal-line" style="margin-bottom: 5px; border-left: 2px solid var(--primary); padding-left: 10px; opacity: 0.8;">
+                <span style="color: var(--text-dim);">[{{ activity.time|date:"H:i:s" }}]</span> 
+                <span style="color: var(--primary);">SIGNAL_DETECTED:</span> 
+                {{ activity.type|upper }} -> {{ activity.detail }}
+            </div>
+            {% endfor %}
+            <div class="terminal-cursor" style="display: inline-block; width: 8px; height: 15px; background: var(--accent); animation: blink 1s infinite;"></div>
+        </div>
     </div>
 </div>
 
 <style>
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .terminal-content::-webkit-scrollbar { width: 4px; }
+    .terminal-content::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 2px; }
+    .terminal-box { position: relative; overflow: hidden; }
+    .terminal-box::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 1px, transparent 1px, transparent 2px); pointer-events: none; }
     .dashboard-wrapper { padding-bottom: 5rem; }
 
     /* Grids */
