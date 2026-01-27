@@ -254,29 +254,49 @@ def get_chatbot_response(user_query, context_data, history=None, web_results=Non
 
 def calculate_sentiment(text):
     """
-    Analyzes sentiment of text and returns a score between -1.0 and 1.0.
-    In a production app, this would use a more advanced NLP model.
+    Analyzes sentiment of text with improved keyword matching and basic negation awareness.
     """
     positive_keywords = {
         'visionary', 'development', 'growth', 'integrity', 'reform', 'future', 
         'progress', 'success', 'democracy', 'unity', 'hope', 'prosperous',
-        'better', 'improve', 'leadership', 'stable', 'positive'
+        'better', 'improve', 'leadership', 'stable', 'positive', 'strong', 
+        'efficient', 'transparency', 'commitment', 'qualified'
     }
     negative_keywords = {
         'corruption', 'crisis', 'failure', 'protest', 'violence', 'unstable',
         'scandal', 'debt', 'inflation', 'poverty', 'strike', 'conflict',
-        'negative', 'worse', 'regret', 'warning', 'risk'
+        'negative', 'worse', 'regret', 'warning', 'risk', 'corrupt', 
+        'unqualified', 'mismanagement', 'deceit', 'broken'
     }
     
-    words = re.findall(r'\w+', text.lower())
-    pos_count = sum(1 for w in words if w in positive_keywords)
-    neg_count = sum(1 for w in words if w in negative_keywords)
+    text = text.lower()
+    words = re.findall(r'\w+', text)
     
-    total = pos_count + neg_count
+    negators = {'not', 'never', 'no', 'hardly', 'barely', 'scarcely'}
+    
+    pos_score = 0
+    neg_score = 0
+    
+    for i, word in enumerate(words):
+        is_negated = False
+        if i > 0 and words[i-1] in negators:
+            is_negated = True
+            
+        if word in positive_keywords:
+            if is_negated:
+                neg_score += 1
+            else:
+                pos_score += 1
+        elif word in negative_keywords:
+            if is_negated:
+                pos_score += 1
+            else:
+                neg_score += 1
+    
+    total = pos_score + neg_score
     if total == 0:
         return 0.0
     
-    # Return a score normalized between -1.0 and 1.0
-    return (pos_count - neg_count) / total
+    return (pos_score - neg_score) / total
 
 
