@@ -57,6 +57,14 @@ class CandidateDetailView(DetailView):
             models.Q(party=self.object.party) | models.Q(province=self.object.province)
         ).exclude(id=self.object.id).distinct()[:4]
         
+        # Intelligence Enrichment: Sentiment Snapshot
+        if self.object.ai_work_analysis:
+            context['sentiment_score'] = int((calculate_sentiment(self.object.ai_work_analysis) + 1) * 50)
+        else:
+            context['sentiment_score'] = 75 # Baseline
+            
+        context['engagement_trend'] = [20, 35, 45, 30, 55, 70, 85] # Mock weekly trend
+        
         return context
 
 class CandidateCreateView(CreateView):
@@ -438,7 +446,8 @@ def dashboard_view(request):
         'province_stats': province_stats,
         'trending_topics': trending_topics,
         'sentiment_data': sentiment_data,
-        'current_time': timezone.now()
+        'current_time': timezone.now(),
+        'provinces': Candidate.PROVINCE_CHOICES
     })
 
 
