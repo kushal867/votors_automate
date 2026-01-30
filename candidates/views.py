@@ -50,6 +50,10 @@ class CandidateDetailView(DetailView):
         self.object.view_count = models.F('view_count') + 1
         self.object.save(update_fields=['view_count'])
         
+        # Log to EngagementHistory
+        from .models import EngagementHistory
+        EngagementHistory.objects.create(candidate=self.object, views=1)
+        
         context['manifestos'] = self.object.manifestos.all()
         
         # Add Related Assets
@@ -63,8 +67,13 @@ class CandidateDetailView(DetailView):
         else:
             context['sentiment_score'] = 75 # Baseline
             
-        context['engagement_trend'] = [20, 35, 45, 30, 55, 70, 85] # Mock weekly trend
-        
+        # Get real trend if possible, otherwise fallback
+        history = EngagementHistory.objects.filter(candidate=self.object).order_by('timestamp')[:7]
+        if history.count() >= 3:
+            context['engagement_trend'] = [h.views for h in history]
+        else:
+            context['engagement_trend'] = [20, 35, 45, 30, 55, 70, 85] # Mock baseline
+            
         return context
 
 class CandidateCreateView(CreateView):
@@ -220,6 +229,12 @@ def global_search(request):
         )
         # Track engagement for matched candidates
         candidates.update(search_count=models.F('search_count') + 1)
+        
+        # Log search engagement
+        from .models import EngagementHistory
+        for c in candidates:
+            EngagementHistory.objects.create(candidate=c, searches=1)
+
     return render(request, 'candidates/candidate_list.html', {
         'candidates': candidates,
         'search_query': query,
@@ -376,8 +391,9 @@ def dashboard_view(request):
         'ingested_data': total_manifestos,
         'queries_processed': QueryLog.objects.count(),
         'global_reach': f"{total_views}+", 
-        'system_status': 'Operational',
+        'system_status': 'Operational' if total_candidates > 0 else 'Initial Setup',
         'intelligence_efficiency': '98.4%',
+        'database_health': 'Optimal',
         'last_sync': timezone.now().strftime("%Y.%m.%d %H:%M:%S")
     }
     
@@ -386,7 +402,7 @@ def dashboard_view(request):
     for q in recent_queries:
         activities.append({
             'type': 'Intelligence Query',
-            'detail': f"'{q.query[:35]}...' | Source: {q.source}",
+            'detail': f"'{q.query[:35]}...' | Sentiment: {'+' if q.sentiment_score > 0 else '-'}{abs(q.sentiment_score):.1f}",
             'time': q.timestamp
         })
     

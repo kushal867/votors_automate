@@ -41,6 +41,20 @@ class Candidate(models.Model):
             self.slug = slug
         super().save(*args, **kwargs)
 
+class EngagementHistory(models.Model):
+    """Tracks engagement metrics for a candidate over time for trend analysis."""
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='engagement_logs')
+    views = models.PositiveIntegerField(default=0)
+    searches = models.PositiveIntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name_plural = "Engagement Histories"
+
+    def __str__(self):
+        return f"Engage: {self.candidate.name} at {self.timestamp}"
+
 class Manifesto(models.Model):
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='manifestos')
     pdf_file = models.FileField(upload_to='manifestos/')
