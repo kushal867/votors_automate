@@ -94,35 +94,26 @@
                     <!-- Nepal Outline -->
                     <path d="M50,150 L250,100 L500,80 L780,120 L800,300 L750,380 L550,420 L300,430 L50,380 Z" fill="rgba(67, 97, 238, 0.05)" stroke="var(--primary)" stroke-width="2" />
                     
-                    <!-- Province Indicators (Positions are roughly approximated) -->
-                    <g class="map-target" title="Sudurpashchim">
-                        <circle cx="120" cy="220" r="{% if province_stats.7 %}{{ province_stats.7|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="120" y="250" fill="var(--text-dim)" font-size="10">P.7: {{ province_stats.7 }}</text>
+                    <!-- Province Indicators -->
+                    {% for p_code, p_name in provinces %}
+                    <g class="map-target" title="{{ p_name }}">
+                        <!-- Use a dynamic pulse if there are candidates in this province -->
+                        <circle cx="{% if p_code == '7' %}120{% elif p_code == '6' %}250{% elif p_code == '5' %}350{% elif p_code == '4' %}450{% elif p_code == '3' %}550{% elif p_code == '2' %}650{% else %}720{% endif %}" 
+                                cy="{% if p_code == '7' %}220{% elif p_code == '6' %}200{% elif p_code == '5' %}300{% elif p_code == '4' %}180{% elif p_code == '3' %}220{% elif p_code == '2' %}320{% else %}220{% endif %}" 
+                                r="8" 
+                                fill="var(--primary)" 
+                                class="map-node">
+                            <animate attributeName="r" values="6;10;6" dur="3s" repeatCount="indefinite" />
+                            <animate attributeName="opacity" values="0.4;1;0.4" dur="3s" repeatCount="indefinite" />
+                        </circle>
                     </g>
-                    <g class="map-target" title="Karnali">
-                        <circle cx="250" cy="200" r="{% if province_stats.6 %}{{ province_stats.6|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="250" y="230" fill="var(--text-dim)" font-size="10">P.6: {{ province_stats.6 }}</text>
-                    </g>
-                    <g class="map-target" title="Lumbini">
-                        <circle cx="350" cy="300" r="{% if province_stats.5 %}{{ province_stats.5|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="350" y="330" fill="var(--text-dim)" font-size="10">P.5: {{ province_stats.5 }}</text>
-                    </g>
-                    <g class="map-target" title="Gandaki">
-                        <circle cx="450" cy="180" r="{% if province_stats.4 %}{{ province_stats.4|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="450" y="210" fill="var(--text-dim)" font-size="10">P.4: {{ province_stats.4 }}</text>
-                    </g>
-                    <g class="map-target" title="Bagmati">
-                        <circle cx="550" cy="220" r="{% if province_stats.3 %}{{ province_stats.3|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="550" y="250" fill="var(--text-dim)" font-size="10">P.3: {{ province_stats.3 }}</text>
-                    </g>
-                    <g class="map-target" title="Madhesh">
-                        <circle cx="650" cy="320" r="{% if province_stats.2 %}{{ province_stats.2|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="650" y="350" fill="var(--text-dim)" font-size="10">P.2: {{ province_stats.2 }}</text>
-                    </g>
-                    <g class="map-target" title="Koshi">
-                        <circle cx="720" cy="220" r="{% if province_stats.1 %}{{ province_stats.1|add:10 }}{% else %}5{% endif %}" fill="var(--secondary)" class="map-node" />
-                        <text x="720" y="250" fill="var(--text-dim)" font-size="10">P.1: {{ province_stats.1 }}</text>
-                    </g>
+                    {% endfor %}
+                    
+                    <!-- Scanning Radar Line -->
+                    <line x1="0" y1="0" x2="800" y2="0" stroke="var(--accent)" stroke-width="1" opacity="0.3">
+                        <animate attributeName="y1" values="0;450;0" dur="8s" repeatCount="indefinite" />
+                        <animate attributeName="y2" values="0;450;0" dur="8s" repeatCount="indefinite" />
+                    </line>
                 </svg>
                 <div class="caption-overlay">SENSITIVITY: HIGH / LIVE ASSET HOTSPOTS</div>
             </div>

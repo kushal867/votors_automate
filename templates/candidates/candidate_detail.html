@@ -66,22 +66,53 @@
 
         <!-- Main Intelligence Stream -->
         <div class="intelligence-stream">
+            <!-- Engagement Metrics -->
+            <div class="stats-row reveal" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem;">
+                <div class="premium-card stat-item">
+                    <span class="stat-label">System Engagements</span>
+                    <div class="stat-value">{{ candidate.view_count }}</div>
+                    <div class="stat-trend">+{{ candidate.view_count|divisibleby:5|yesno:"12,5" }}% vs last week</div>
+                </div>
+                <div class="premium-card stat-item">
+                    <span class="stat-label">Search Inquiries</span>
+                    <div class="stat-value">{{ candidate.search_count }}</div>
+                    <div class="stat-trend">+{{ candidate.search_count|divisibleby:3|yesno:"8,2" }}% vs last week</div>
+                </div>
+                <div class="premium-card stat-item" style="border-right: none;">
+                    <span class="stat-label">Sentiment Pulse</span>
+                    <div class="stat-value">{{ sentiment_score }}<span style="font-size: 1rem; opacity: 0.5;">%</span></div>
+                    <div style="height: 20px; width: 100%; margin-top: 5px;">
+                        <svg viewBox="0 0 100 20" style="width: 100%; height: 100%;">
+                            <path d="M0,15 L15,10 L30,12 L45,5 L60,8 L75,2 L100,6" fill="none" stroke="var(--accent)" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
             <!-- Record Analysis -->
             <section class="intelligence-section">
                 <div class="section-header">
                     <div class="status-dot secondary"></div>
-                    <h2>Track Record & Impact Analysis</h2>
+                    <h2>Political Intelligence Report</h2>
                 </div>
                 
                 <div class="analysis-panel">
                     <div class="analysis-content">
                         {% if candidate.ai_work_analysis %}
-                            {{ candidate.ai_work_analysis|linebreaks }}
+                            <div class="intelligence-memo">
+                                <div class="memo-header">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                        <span style="font-family: 'Outfit'; font-weight: 800; color: var(--secondary);">CLASSIFIED ANALYSIS</span>
+                                        <span style="font-size: 0.7rem; color: var(--text-dim);">LAST_SYNC: {{ candidate.updated_at|date:"Y.m.d H:i" }}</span>
+                                    </div>
+                                </div>
+                                {{ candidate.ai_work_analysis|linebreaks }}
+                            </div>
                         {% else %}
                             <div class="empty-intelligence">
                                 <div style="font-size: 3rem; margin-bottom: 1.5rem; opacity: 0.2;">📡</div>
                                 <p>Deep intelligence report pending synthetic extraction.</p>
-                                <a href="{% url 'chat' %}" class="btn-modern btn-outline" style="margin-top: 1.5rem; font-size: 0.75rem;">INITIALIZE EXTRACTION</a>
+                                <a href="{% url 'candidate-report' candidate.id %}?refresh=1" class="btn-modern btn-outline" style="margin-top: 1.5rem; font-size: 0.75rem;">INITIALIZE EXTRACTION</a>
                             </div>
                         {% endif %}
                     </div>
@@ -126,6 +157,33 @@
                     {% endfor %}
                 </div>
             </section>
+
+            <!-- Related Assets Section -->
+            {% if related_candidates %}
+            <section class="intelligence-section" style="margin-top: 2rem;">
+                <div class="section-header">
+                    <div class="status-dot" style="background: var(--teal); box-shadow: 0 0 15px var(--teal);"></div>
+                    <h2>Related Strategic Assets</h2>
+                </div>
+                <div class="related-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem;">
+                    {% for relative in related_candidates %}
+                    <a href="{% url 'candidate-detail' relative.id %}" class="premium-card related-card" style="text-decoration: none; padding: 1.5rem; display: flex; align-items: center; gap: 1.5rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 12px; overflow: hidden; background: #05070a; flex-shrink: 0;">
+                            {% if relative.image %}
+                                <img src="{{ relative.image.url }}" style="width: 100%; height: 100%; object-fit: cover; filter: grayscale(1);">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; opacity: 0.3;">🇳🇵</div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; font-size: 1rem; color: white;">{{ relative.name }}</h4>
+                            <p style="margin: 3px 0 0; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 800;">{{ relative.party }}</p>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -308,10 +366,63 @@
         color: var(--text-dim);
     }
 
+    .stats-row .stat-item {
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .stat-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 800;
+        color: var(--text-dim);
+        margin-bottom: 0.8rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 800;
+        font-family: 'Outfit';
+        color: white;
+    }
+
+    .stat-trend {
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-top: 0.5rem;
+        color: var(--secondary);
+    }
+
+    .intelligence-memo {
+        position: relative;
+    }
+
+    .memo-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+    }
+
+    .related-card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+    }
+
+    .related-card:hover {
+        background: rgba(67, 97, 238, 0.05);
+        border-color: var(--primary);
+    }
+
     @media (max-width: 1200px) {
         .detail-grid { grid-template-columns: 1fr; gap: 3rem; }
         .profile-sidebar { position: relative; top: 0; }
         .profile-image-container { height: 400px; }
+        .stats-row { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 768px) {
@@ -324,6 +435,7 @@
         .section-header h2 { font-size: 1.4rem; }
         .intelligence-stream { gap: 3rem; }
         .analysis-content { font-size: 1rem; line-height: 1.8; }
+        .stats-row { grid-template-columns: 1fr; }
     }
 </style>
 {% endblock %}

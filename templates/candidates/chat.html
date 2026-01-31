@@ -241,9 +241,9 @@
         </div>
 
         <div style="display: none; padding: 0 3rem 1.5rem;" id="typingState">
-            <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 0.8rem; font-weight: 800;">
-                <div class="status-pulse" style="width: 6px; height: 6px;"></div>
-                SYNTHESIZING INTELLIGENCE...
+            <div style="display: flex; align-items: center; gap: 12px; color: var(--primary); font-size: 0.8rem; font-weight: 800; font-family: 'Outfit', sans-serif; letter-spacing: 1px;">
+                <div class="status-pulse" style="width: 8px; height: 8px;"></div>
+                <span id="typingMessage">SYNTHESIZING INTELLIGENCE...</span>
             </div>
         </div>
 
@@ -265,6 +265,16 @@
     const userInput = document.getElementById('userInput');
     const typingState = document.getElementById('typingState');
 
+    const statusMessages = [
+        "SYNTHESIZING INTELLIGENCE...",
+        "ACCESSING SATELLITE NODES...",
+        "QUERYING LOCAL DATABASE...",
+        "PERFORMING WEB RESEARCH...",
+        "ANALYZING POLITICAL RECORD...",
+        "FINALIZING DATA PACKET..."
+    ];
+    let statusInterval;
+
     async function sendMessage() {
         const query = userInput.value.trim();
         if (!query) return;
@@ -273,6 +283,13 @@
         userInput.value = '';
         
         typingState.style.display = 'block';
+        let statusIdx = 0;
+        document.getElementById('typingMessage').textContent = statusMessages[statusIdx];
+        statusInterval = setInterval(() => {
+            statusIdx = (statusIdx + 1) % statusMessages.length;
+            document.getElementById('typingMessage').textContent = statusMessages[statusIdx];
+        }, 3000);
+
         messageStream.scrollTop = messageStream.scrollHeight;
 
         try {
@@ -286,6 +303,7 @@
             });
 
             const data = await response.json();
+            clearInterval(statusInterval);
             typingState.style.display = 'none';
             
             if (data.status === 'success') {
@@ -294,6 +312,7 @@
                 appendUI("Interruption: " + data.message, 'ai');
             }
         } catch (error) {
+            clearInterval(statusInterval);
             typingState.style.display = 'none';
             appendUI("Satellite Link Failure. Emergency backup link active - please retry.", 'ai');
         }

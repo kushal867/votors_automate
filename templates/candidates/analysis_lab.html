@@ -355,7 +355,7 @@
                 <div class="analyst-chat reveal" style="animation-delay: 0.3s;">
                     <div class="chat-header">
                         <div class="badge badge-rose">Analyst Query Mode</div>
-                        <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 700;">Live Session: Document Index v4.1</span>
+                        <span id="labStatusText" style="font-size: 0.75rem; color: var(--text-dim); font-weight: 700;">Live Session: Document Index v4.1</span>
                     </div>
                     
                     <div class="chat-box" id="labChatBox">
@@ -363,10 +363,17 @@
                             Intelligence indexed successfully. I am ready for targeted document cross-referencing or specific profile queries based on the ingested data.
                         </div>
                     </div>
+
+                    <div id="labTyping" style="display: none; margin-bottom: 2rem;">
+                         <div style="display: flex; align-items: center; gap: 8px; color: var(--secondary); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px;">
+                            <div class="status-pulse" style="width: 6px; height: 6px; background: var(--secondary); box-shadow: 0 0 10px var(--secondary);"></div>
+                            Cross-referencing docs...
+                         </div>
+                    </div>
                     
                     <div class="chat-input-container">
                         <input type="text" id="labChatInput" class="chat-input" placeholder="Query specific metrics or cross-referencing..." onkeypress="handleLabEnter(event)">
-                        <button onclick="executeLabSearch()" class="send-btn">
+                        <button onclick="executeLabSearch()" class="send-btn" style="background: var(--secondary); box-shadow: 0 4px 15px rgba(255, 0, 85, 0.2);">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </button>
                     </div>
@@ -414,6 +421,11 @@
 
         appendLabUI(query, 'user');
         input.value = '';
+        
+        const typing = document.getElementById('labTyping');
+        if(typing) typing.style.display = 'block';
+        const box = document.getElementById('labChatBox');
+        box.scrollTop = box.scrollHeight;
 
         try {
             const response = await fetch("{% url 'analysis-lab' %}", {
@@ -426,8 +438,10 @@
                 body: JSON.stringify({ query: query })
             });
             const data = await response.json();
+            if(typing) typing.style.display = 'none';
             appendLabUI(data.response, 'ai');
         } catch (e) {
+            if(typing) typing.style.display = 'none';
             appendLabUI("Signal degradation: Link failed.", 'ai');
         }
     }

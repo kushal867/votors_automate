@@ -7,7 +7,9 @@ from django.http import JsonResponse
 import json
 import logging
 
-from .models import Candidate, Manifesto, QueryLog, ResearchAnalysis
+from .models import Candidate, Manifesto, QueryLog, ResearchAnalysis, EngagementHistory
+from django.db.models import Sum, Q, F
+from django.utils import timezone
 from .utils import (
     analyze_candidate_data, 
     analyze_manifesto_vision, 
@@ -51,7 +53,6 @@ class CandidateDetailView(DetailView):
         self.object.save(update_fields=['view_count'])
         
         # Log to EngagementHistory
-        from .models import EngagementHistory
         EngagementHistory.objects.create(candidate=self.object, views=1)
         
         context['manifestos'] = self.object.manifestos.all()
@@ -231,7 +232,6 @@ def global_search(request):
         candidates.update(search_count=models.F('search_count') + 1)
         
         # Log search engagement
-        from .models import EngagementHistory
         for c in candidates:
             EngagementHistory.objects.create(candidate=c, searches=1)
 
@@ -369,9 +369,6 @@ def dashboard_view(request):
     """
     The Command Center Dashboard: High-level overview of system intelligence with live data.
     """
-    from django.utils import timezone
-    from django.db.models import Sum
-
     total_candidates = Candidate.objects.count()
     total_manifestos = Manifesto.objects.count()
     total_views = Candidate.objects.aggregate(total_views=Sum('view_count'))['total_views'] or 0

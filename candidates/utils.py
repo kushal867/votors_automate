@@ -73,7 +73,7 @@ def get_ai_response(prompt, system_instruction=None):
         genai.configure(api_key=settings.GEMINI_API_KEY)
         # Use models from available_models.txt
         # Use latest high-performance models
-        models_to_try = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.0-flash-exp', 'gemini-1.5-pro']
+        models_to_try = ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-2.0-flash-exp', 'gemini-1.5-flash']
         
         for model_name in models_to_try:
             try:
@@ -260,13 +260,18 @@ def calculate_sentiment(text):
         'visionary', 'development', 'growth', 'integrity', 'reform', 'future', 
         'progress', 'success', 'democracy', 'unity', 'hope', 'prosperous',
         'better', 'improve', 'leadership', 'stable', 'positive', 'strong', 
-        'efficient', 'transparency', 'commitment', 'qualified'
+        'efficient', 'transparency', 'commitment', 'qualified', 'dedicated',
+        'youth', 'employment', 'education', 'healthcare', 'innovation', 
+        'sustainable', 'justice', 'peace', 'prosperity', 'inclusive', 
+        'accountable', 'empowerment', 'transformation', 'revolutionary'
     }
     negative_keywords = {
         'corruption', 'crisis', 'failure', 'protest', 'violence', 'unstable',
         'scandal', 'debt', 'inflation', 'poverty', 'strike', 'conflict',
         'negative', 'worse', 'regret', 'warning', 'risk', 'corrupt', 
-        'unqualified', 'mismanagement', 'deceit', 'broken'
+        'unqualified', 'mismanagement', 'deceit', 'broken', 'unemployment',
+        'division', 'discrimination', 'rigged', 'authoritarian', 'suppression',
+        'nepotism', 'injustice', 'instability', 'chaos', 'regression'
     }
     
     text = text.lower()
