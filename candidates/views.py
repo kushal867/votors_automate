@@ -20,6 +20,13 @@ from .utils import (
     calculate_sentiment
 )
 from .services import get_relevant_context, process_manifesto_upload
+from .analytics import (
+    get_dashboard_stats, 
+    get_trending_topics, 
+    get_sentiment_velocity, 
+    get_system_activity,
+    get_political_briefing
+)
 
 logger = logging.getLogger(__name__)
 
@@ -369,96 +376,37 @@ def dashboard_view(request):
     """
     The Command Center Dashboard: High-level overview of system intelligence with live data.
     """
-    total_candidates = Candidate.objects.count()
-    total_manifestos = Manifesto.objects.count()
-    total_views = Candidate.objects.aggregate(total_views=Sum('view_count'))['total_views'] or 0
-    recent_candidates = Candidate.objects.all().order_by('-id')[:5]
+    # 1. Core Analytics via Service
+    stats = get_dashboard_stats()
+    activities = get_system_activity()
+    sentiment_data = get_sentiment_velocity()
+    trending_topics = get_trending_topics()
+    news_briefing = get_political_briefing()
     
-    # Real-ish activity feed
-    activities = []
-    for cand in recent_candidates:
-        activities.append({
-            'type': 'Candidate Added',
-            'detail': f"{cand.name} ({cand.party}) registered",
-            'time': cand.created_at
-        })
-    
-    stats = {
-        'total_assets': total_candidates,
-        'ingested_data': total_manifestos,
-        'queries_processed': QueryLog.objects.count(),
-        'global_reach': f"{total_views}+", 
-        'system_status': 'Operational' if total_candidates > 0 else 'Initial Setup',
-        'intelligence_efficiency': '98.4%',
-        'database_health': 'Optimal',
-        'last_sync': timezone.now().strftime("%Y.%m.%d %H:%M:%S")
-    }
-    
-    # Enrichment: Recent System Activity
-    recent_queries = QueryLog.objects.all().order_by('-timestamp')[:8]
-    for q in recent_queries:
-        activities.append({
-            'type': 'Intelligence Query',
-            'detail': f"'{q.query[:35]}...' | Sentiment: {'+' if q.sentiment_score > 0 else '-'}{abs(q.sentiment_score):.1f}",
-            'time': q.timestamp
-        })
-    
-    # Featured Content
+    # 2. Featured Content
     featured_candidate = Candidate.objects.filter(is_featured=True).first() or \
                          Candidate.objects.filter(image__isnull=False).first() or \
                          Candidate.objects.first()
     
-    # Geographic Intelligence
+    # 3. Geographic Intelligence
     province_counts = Candidate.objects.values('province').annotate(count=models.Count('province'))
     province_stats = {str(i): 0 for i in range(1, 8)}
     for p in province_counts:
         province_stats[p['province']] = p['count']
 
-    # Trending Political Entities
+    # 4. Leading Assets
     popular_candidates = Candidate.objects.filter(is_active=True).order_by('-view_count')[:5]
-
-    # NLP Analysis: Trending Topics
-    all_queries = QueryLog.objects.all().order_by('-timestamp')[:200].values_list('query', flat=True)
-    all_words = " ".join(all_queries).lower().split()
-    stopwords = {'the', 'a', 'is', 'in', 'and', 'to', 'of', 'for', 'nepal', 'who', 'what', 'how', 'is', 'the', 'candidate', 'manifesto', 'election', 'voter', 'vision', 'about', 'with', 'this'}
-    trending_words = {}
-    for word in all_words:
-        word = ''.join(e for e in word if e.isalnum())
-        if len(word) > 3 and word not in stopwords:
-            trending_words[word] = trending_words.get(word, 0) + 1
-    
-    trending_topics = sorted(trending_words.items(), key=lambda x: x[1], reverse=True)[:6]
-    trending_topics = [t[0].capitalize() for t in trending_topics]
-
-    # Dynamic Sentiment Analysis for Chart
-    sentiment_data = []
-    # Segment last 6 periods
-    total_logs = QueryLog.objects.count()
-    if total_logs > 10:
-        chunk_size = max(1, total_logs // 6)
-        all_logs = list(QueryLog.objects.all().order_by('timestamp'))
-        for i in range(6):
-            start = i * chunk_size
-            end = min((i + 1) * chunk_size, total_logs)
-            chunk = all_logs[start:end]
-            if chunk:
-                avg = sum(l.sentiment_score for l in chunk) / len(chunk)
-                sentiment_data.append(int((avg + 1) * 50))
-            else:
-                sentiment_data.append(50)
-    else:
-        # Fallback to realistic-looking mock data if logs are sparse
-        sentiment_data = [45, 62, 58, 71, 85, 92]
 
     return render(request, 'candidates/dashboard.html', {
         'stats': stats,
-        'recent_candidates': recent_candidates,
+        'recent_candidates': Candidate.objects.all().order_by('-created_at')[:5],
         'popular_candidates': popular_candidates,
         'featured_candidate': featured_candidate,
-        'activities': sorted(activities, key=lambda x: x['time'], reverse=True)[:10],
+        'activities': activities,
         'province_stats': province_stats,
         'trending_topics': trending_topics,
         'sentiment_data': sentiment_data,
+        'news_briefing': news_briefing,
         'current_time': timezone.now(),
         'provinces': Candidate.PROVINCE_CHOICES
     })
