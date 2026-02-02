@@ -59,12 +59,14 @@ def get_sentiment_velocity(periods=6):
             chunk = all_logs[start:end]
             if chunk:
                 avg = sum(l.sentiment_score for l in chunk) / len(chunk)
-                sentiment_data.append(int((avg + 1) * 50))
+                # Map -1.0..1.0 to 10..90 for better visual
+                sentiment_data.append(int((avg + 1) * 40 + 10))
             else:
                 sentiment_data.append(50)
     else:
-        # Fallback realistic mock data
-        sentiment_data = [45, 62, 58, 71, 85, 92]
+        # Fallback realistic mock data with some randomness
+        import random
+        sentiment_data = [random.randint(40, 60) for _ in range(periods-2)] + [75, 88]
         
     return sentiment_data
 

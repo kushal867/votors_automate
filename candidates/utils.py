@@ -263,7 +263,8 @@ def calculate_sentiment(text):
         'efficient', 'transparency', 'commitment', 'qualified', 'dedicated',
         'youth', 'employment', 'education', 'healthcare', 'innovation', 
         'sustainable', 'justice', 'peace', 'prosperity', 'inclusive', 
-        'accountable', 'empowerment', 'transformation', 'revolutionary'
+        'accountable', 'empowerment', 'transformation', 'revolutionary',
+        'transparency', 'collaboration', 'resilience', 'harmony', 'security'
     }
     negative_keywords = {
         'corruption', 'crisis', 'failure', 'protest', 'violence', 'unstable',
@@ -271,30 +272,34 @@ def calculate_sentiment(text):
         'negative', 'worse', 'regret', 'warning', 'risk', 'corrupt', 
         'unqualified', 'mismanagement', 'deceit', 'broken', 'unemployment',
         'division', 'discrimination', 'rigged', 'authoritarian', 'suppression',
-        'nepotism', 'injustice', 'instability', 'chaos', 'regression'
+        'nepotism', 'injustice', 'instability', 'chaos', 'regression',
+        'censorship', 'coercion', 'stagnation', 'oppression', 'militancy'
     }
     
     text = text.lower()
     words = re.findall(r'\w+', text)
     
-    negators = {'not', 'never', 'no', 'hardly', 'barely', 'scarcely'}
+    negators = {'not', 'never', 'no', 'hardly', 'barely', 'scarcely', 'cannot', 'wasnt', 'isnt'}
     
     pos_score = 0
     neg_score = 0
     
     for i, word in enumerate(words):
         is_negated = False
+        # Check previous 2 words for negation
         if i > 0 and words[i-1] in negators:
+            is_negated = True
+        elif i > 1 and words[i-2] in negators:
             is_negated = True
             
         if word in positive_keywords:
             if is_negated:
-                neg_score += 1
+                neg_score += 1.5 # Negated positive is quite negative
             else:
                 pos_score += 1
         elif word in negative_keywords:
             if is_negated:
-                pos_score += 1
+                pos_score += 1.2 # Negated negative is positive but cautious
             else:
                 neg_score += 1
     
@@ -302,6 +307,7 @@ def calculate_sentiment(text):
     if total == 0:
         return 0.0
     
-    return (pos_score - neg_score) / total
+    # Normalize to -1.0 to 1.0
+    return (pos_score - neg_score) / (pos_score + neg_score)
 
 
