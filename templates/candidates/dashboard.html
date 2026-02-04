@@ -207,41 +207,15 @@
     <div class="bottom-grid">
         <div class="glass-card analytic-box">
             <h3 class="box-title">Network Sentiment Velocity</h3>
-            <div class="bar-ensemble">
-                {% for val in sentiment_data %}
-                <div class="bar-wrapper">
-                    {% if forloop.counter == 1 %}
-                    <div class="bar" style="height: {{ val }}%; --c: var(--secondary);"></div><span>JAN</span>
-                    {% elif forloop.counter == 2 %}
-                    <div class="bar" style="height: {{ val }}%; --c: var(--primary);"></div><span>FEB</span>
-                    {% elif forloop.counter == 3 %}
-                    <div class="bar" style="height: {{ val }}%; --c: var(--accent);"></div><span>MAR</span>
-                    {% elif forloop.counter == 4 %}
-                    <div class="bar" style="height: {{ val }}%; --c: var(--gold);"></div><span>APR</span>
-                    {% elif forloop.counter == 5 %}
-                    <div class="bar" style="height: {{ val }}%; --c: var(--teal);"></div><span>MAY</span>
-                    {% elif forloop.counter == 6 %}
-                    <div class="bar" style="height: {{ val }}%; --c: var(--primary);"></div><span>JUN</span>
-                    {% endif %}
-                </div>
-                {% endfor %}
+            <div class="chart-container" style="height: 200px; margin-top: 2rem;">
+                <canvas id="sentimentChart"></canvas>
             </div>
         </div>
 
         <div class="glass-card analytic-box">
              <h3 class="box-title">Intelligence Flow Index</h3>
-             <div class="vector-graph">
-                  <svg viewBox="0 0 400 150">
-                      <defs>
-                          <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" style="stop-color:var(--primary);stop-opacity:0.3" />
-                              <stop offset="100%" style="stop-color:transparent;stop-opacity:0" />
-                          </linearGradient>
-                      </defs>
-                      <path d="M0,120 Q50,40 100,100 T200,60 T300,110 T400,20" fill="none" stroke="var(--primary)" stroke-width="4" />
-                      <path d="M0,120 Q50,40 100,100 T200,60 T300,110 T400,20 V150 H0 Z" fill="url(#grad)" />
-                      <circle cx="400" cy="20" r="6" fill="#fff" class="glow-pulse" />
-                  </svg>
+             <div class="chart-container" style="height: 200px; margin-top: 2rem;">
+                  <canvas id="flowChart"></canvas>
              </div>
         </div>
 
@@ -251,7 +225,7 @@
                 {% for activity in activities %}
                 <div class="feed-entry">
                     <div class="entry-avatar">
-                        {% if activity.type == 'Candidate Added' %}⚡{% else %}📡{% endif %}
+                        {{ activity.icon }}
                     </div>
                     <div class="entry-meta">
                         <div class="e-name">{{ activity.type }}</div>
@@ -264,6 +238,31 @@
                 {% endfor %}
             </div>
         </div>
+    </div>
+
+    <!-- Row 4: Strategic Intelligence Briefing -->
+    <div style="margin-top: 3.5rem;">
+        <div class="section-label">Strategic Intelligence Briefing [Real-time]</div>
+        <div class="stat-grid" style="grid-template-columns: repeat(3, 1fr);">
+            {% for news in news_briefing %}
+            <div class="glass-card premium-card" style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                    <div class="badge badge-emerald">INTELLIGENCE</div>
+                    <div style="color: var(--text-dim); font-size: 0.65rem; font-weight: 800;">{{ news.time }}</div>
+                </div>
+                <h4 style="font-size: 1.1rem; margin-bottom: 1rem; color: #fff;">{{ news.title }}</h4>
+                <p style="color: var(--text-muted); font-size: 0.85rem; line-height: 1.6;">{{ news.snippet }}</p>
+                <div style="margin-top: 2rem; display: flex; align-items: center; gap: 10px; color: var(--primary); font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+                    ANALYZE SIGNAL <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7-7 7M3 12h18"></path></svg>
+                </div>
+            </div>
+            {% empty %}
+            <div class="glass-card" style="grid-column: span 3; text-align: center; color: var(--text-dim); padding: 3rem;">
+                Scanning for real-time political signals...
+            </div>
+            {% endfor %}
+        </div>
+    </div>
         <!-- Row 4: Strategic Intelligence Terminal -->
     <div class="glass-card terminal-box" style="margin-top: 2.2rem; background: #000; border: 1px solid var(--primary); padding: 1.5rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
@@ -273,7 +272,9 @@
             </div>
             <div style="font-family: monospace; font-size: 0.7rem; color: var(--text-dim);">ENCRYPTED_LINK: ACTIVE</div>
         </div>
-        <div class="terminal-content" style="font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--accent); height: 150px; overflow-y: auto; padding-right: 1rem;">
+        <div class="terminal-content" id="systemTerminal" style="font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--accent); height: 150px; overflow-y: auto; padding-right: 1rem;">
+            <div class="terminal-line" style="color: var(--text-dim); margin-bottom: 5px;">[SYSTEM_STARTUP] INITIALIZING NEURAL PATHWAYS...</div>
+            <div class="terminal-line" style="color: var(--primary); margin-bottom: 5px;">[LINK_ESTABLISHED] VVN-CORE v4.0.2 SECURE CONNECTION</div>
             {% for activity in activities %}
             <div class="terminal-line" style="margin-bottom: 5px; border-left: 2px solid var(--primary); padding-left: 10px; opacity: 0.8;">
                 <span style="color: var(--text-dim);">[{{ activity.time|date:"H:i:s" }}]</span> 
@@ -281,6 +282,7 @@
                 {{ activity.type|upper }} -> {{ activity.detail }}
             </div>
             {% endfor %}
+            <div id="terminalBottom"></div>
             <div class="terminal-cursor" style="display: inline-block; width: 8px; height: 15px; background: var(--accent); animation: blink 1s infinite;"></div>
         </div>
     </div>
@@ -392,4 +394,130 @@
     @keyframes glow { 0%, 100% { opacity: 0.5; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
     .glow-pulse { animation: glow 2s infinite ease-in-out; }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Theme colors
+    const colors = {
+        primary: '#4361ee',
+        secondary: '#ff0055',
+        accent: '#00ff88',
+        gold: '#ffcc00',
+        teal: '#00d2ff',
+        text: '#94a3b8'
+    };
+
+    // Sentiment Chart
+    const ctxSentiment = document.getElementById('sentimentChart').getContext('2d');
+    new Chart(ctxSentiment, {
+        type: 'bar',
+        data: {
+            labels: ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN'],
+            datasets: [{
+                label: 'Sentiment Score',
+                data: {{ sentiment_data|safe }},
+                backgroundColor: [
+                    colors.secondary, colors.primary, colors.accent,
+                    colors.gold, colors.teal, colors.primary
+                ],
+                borderRadius: 8,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { display: false, beginAtZero: true, max: 100 },
+                x: { grid: { display: false }, ticks: { color: colors.text, font: { size: 10, weight: 'bold' } } }
+            }
+        }
+    });
+
+    // Flow Chart
+    const ctxFlow = document.getElementById('flowChart').getContext('2d');
+    const gradient = ctxFlow.createLinearGradient(0, 0, 0, 200);
+    gradient.addColorStop(0, 'rgba(67, 97, 238, 0.4)');
+    gradient.addColorStop(1, 'rgba(67, 97, 238, 0)');
+
+    new Chart(ctxFlow, {
+        type: 'line',
+        data: {
+            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            datasets: [{
+                label: 'Flow Index',
+                data: [30, 45, 35, 70, 55, 85, 90], // Real-time flow mock
+                borderColor: colors.primary,
+                borderWidth: 3,
+                fill: true,
+                backgroundColor: gradient,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 6,
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colors.primary,
+                pointHoverBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { display: false, beginAtZero: true },
+                x: { grid: { display: false }, ticks: { color: colors.text, font: { size: 10, weight: 'bold' } } }
+            }
+        }
+    });
+
+    // Auto-scroll terminal to bottom
+    const terminal = document.getElementById('systemTerminal');
+    if (terminal) {
+        terminal.scrollTop = terminal.scrollHeight;
+        
+        // Add random fake lines periodically to keep it "alive"
+        const fakeLogs = [
+            "BUFFERING_SATELLITE_LINK...",
+            "DECRYPTING_POLITICAL_SIGNAL...",
+            "VOICE_ENCODING_VERIFIED",
+            "CROSS_REFERENCING_DATABASE...",
+            "NEURAL_MAP_RECALIBRATED"
+        ];
+        
+        setInterval(() => {
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.style.cssText = 'margin-bottom: 5px; color: var(--text-dim); opacity: 0.6;';
+            const now = new Date();
+            line.innerHTML = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}] <span style="color: var(--teal);">INFO:</span> ${fakeLogs[Math.floor(Math.random() * fakeLogs.length)]}`;
+            terminal.insertBefore(line, document.getElementById('terminalBottom'));
+            terminal.scrollTop = terminal.scrollHeight;
+        }, 8000);
+    }
+
+    // Simple counter animation
+    document.querySelectorAll('.stat-value').forEach(el => {
+        const rawValue = el.innerText.replace('+', '').replace(/[^\d]/g, '');
+        const target = parseInt(rawValue);
+        if (isNaN(target)) return;
+        
+        let current = 0;
+        const duration = 2000;
+        const steps = 60;
+        const stepValue = target / steps;
+        
+        const counter = setInterval(() => {
+            current += stepValue;
+            if (current >= target) {
+                el.innerText = (el.innerText.includes('+') ? target + '+' : target);
+                clearInterval(counter);
+            } else {
+                el.innerText = (el.innerText.includes('+') ? Math.floor(current) + '+' : Math.floor(current));
+            }
+        }, duration / steps);
+    });
+</script>
 {% endblock %}

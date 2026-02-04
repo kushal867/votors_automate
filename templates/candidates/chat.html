@@ -248,11 +248,18 @@
         </div>
 
         <div class="console-input-area">
-            <div class="input-box">
+            <div class="input-box" style="margin-bottom: 1.5rem;">
                 <input type="text" id="userInput" class="chat-field" placeholder="Input query parameters..." onkeypress="handleKeyPress(event)">
                 <button class="execute-btn" onclick="sendMessage()">
                     <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7-7 7M3 12h18"></path></svg>
                 </button>
+            </div>
+            
+            <div class="quick-queries" style="display: flex; flex-wrap: wrap; gap: 0.8rem;">
+                <span class="badge badge-indigo" style="cursor: pointer; border-radius: 8px; padding: 8px 15px;" onclick="setQuery('Analyze current political landscape in Nepal')">Analyze Landscape</span>
+                <span class="badge badge-indigo" style="cursor: pointer; border-radius: 8px; padding: 8px 15px;" onclick="setQuery('Compare major manifesto promises')">Compare Promises</span>
+                <span class="badge badge-indigo" style="cursor: pointer; border-radius: 8px; padding: 8px 15px;" onclick="setQuery('Who are the top featured candidates?')">Top Candidates</span>
+                <span class="badge badge-indigo" style="cursor: pointer; border-radius: 8px; padding: 8px 15px;" onclick="setQuery('Latest trends in public sentiment')">Public Sentiment</span>
             </div>
         </div>
     </div>
@@ -260,6 +267,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
     const messageStream = document.getElementById('messageStream');
     const userInput = document.getElementById('userInput');
@@ -307,7 +315,7 @@
             typingState.style.display = 'none';
             
             if (data.status === 'success') {
-                appendUI(data.response, 'ai');
+                typeResponse(data.response);
             } else {
                 appendUI("Interruption: " + data.message, 'ai');
             }
@@ -332,33 +340,51 @@
         messageStream.scrollTop = messageStream.scrollHeight;
     }
 
-    function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
-
-    function formatPacket(text) {
-        if (!text) return "<em>Empty neural packet received.</em>";
+    function typeResponse(text) {
+        const div = document.createElement('div');
+        div.className = `msg-bubble msg-ai reveal`;
+        messageStream.appendChild(div);
         
-        let html = String(text);
-
-        // Advanced Tags
-        html = html
+        let i = 0;
+        const speed = 15; // ms per char (approximate, since we render markdown)
+        
+        // Custom tags need to be replaced before markdown parsing
+        let processedText = text
             .replace(/\[DB\]/g, '<span class="source-tag tag-db">Database</span>')
             .replace(/\[WEB\]/g, '<span class="source-tag tag-web">Web Node</span>')
             .replace(/\[AI\]/g, '<span class="source-tag tag-ai">Synthetic</span>');
 
-        // Cinematic Typography
-        html = html
-            .replace(/\*\*(.*?)\*\*/g, '<strong style="color: white; font-weight: 800;">$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em style="color: var(--primary); font-weight: 600;">$1</em>');
+        // We'll use marked to convert to HTML
+        const finalHtml = marked.parse(processedText);
+        
+        // Typing effect for HTML is tricky, so we'll just use a fade-in for the whole block
+        // OR a very fast "revealer"
+        div.innerHTML = finalHtml;
+        div.style.opacity = '0';
+        div.style.transform = 'translateY(10px)';
+        div.style.transition = 'all 0.4s ease-out';
+        
+        requestAnimationFrame(() => {
+            div.style.opacity = '1';
+            div.style.transform = 'translateY(0)';
+            messageStream.scrollTop = messageStream.scrollHeight;
+        });
+    }
 
-        // Structure
-        html = html
-            .replace(/^### (.*$)/gm, '<h3 style="color: white; margin-top: 1.5rem; font-weight: 800; font-family: Outfit;">$1</h3>')
-            .replace(/^## (.*$)/gm, '<h2 style="color: white; margin-top: 1.5rem; font-weight: 800; font-family: Outfit;">$1</h2>');
+    function handleKeyPress(e) { if (e.key === 'Enter') sendMessage(); }
 
-        html = html.replace(/^\- (.*$)/gm, '<li style="margin-left: 20px; margin-top: 0.5rem; opacity: 0.9;">$1</li>');
-        html = html.replace(/\n/g, '<br>');
+    function setQuery(query) {
+        userInput.value = query;
+        userInput.focus();
+    }
 
-        return html;
+    function formatPacket(text) {
+        if (!text) return "<em>Empty neural packet received.</em>";
+        let processedText = text
+            .replace(/\[DB\]/g, '<span class="source-tag tag-db">Database</span>')
+            .replace(/\[WEB\]/g, '<span class="source-tag tag-web">Web Node</span>')
+            .replace(/\[AI\]/g, '<span class="source-tag tag-ai">Synthetic</span>');
+        return marked.parse(processedText);
     }
 </script>
 {% endblock %}
