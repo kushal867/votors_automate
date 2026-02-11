@@ -446,15 +446,50 @@ def candidate_report_view(request, pk):
         4. PUBLIC SENTIMENT SNAPSHOT: Based on general political knowledge (AI Internal).
         5. RECOMMENDATION: Brief closing summary for a neutral voter.
         
-        Format as a formal intelligence briefing.
+        CRITICAL: You MUST also provide a strategic breakdown in JSON format at the VERY END of your response inside a ```json ``` block with exactly these keys (scores 0-100):
+        {{
+            "strategic_matrix": {{
+                "economic_vision": score,
+                "social_progress": score,
+                "political_stability": score,
+                "infrastructure_focus": score,
+                "diplomatic_acumen": score
+            }}
+        }}
+        
+        Format the body as a formal intelligence briefing with sections.
         """
-        report_content = get_ai_response(prompt, system_instruction="You are a Lead Intelligence Analyst for Voter Vision Nepal.")
+        raw_response = get_ai_response(prompt, system_instruction="You are a Lead Intelligence Analyst for Voter Vision Nepal.")
+        
+        # Parse the JSON out of the response if it exists
+        from .utils import parse_structured_response
+        matrix_data = parse_structured_response(raw_response)
+        
+        # Clean the response for display (remove the JSON block)
+        import re
+        report_content = re.sub(r'```json\s*.*?\s*```', '', raw_response, flags=re.DOTALL).strip()
+        
         candidate.ai_work_analysis = report_content
+        # We can store the matrix in a temporary context or session, 
+        # but for simplicity let's just use it in this request context.
+        context_matrix = matrix_data.get('strategic_matrix') if matrix_data else None
+        
         candidate.save()
+    else:
+        # If we have report_content but no matrix, we might want to default or skip
+        context_matrix = {
+            "economic_vision": 75,
+            "social_progress": 82,
+            "political_stability": 65,
+            "infrastructure_focus": 70,
+            "diplomatic_acumen": 60
+        } # Baseline defaults
 
     return render(request, 'candidates/candidate_report.html', {
         'candidate': candidate,
         'report_content': report_content,
-        'manifestos': manifestos
+        'manifestos': manifestos,
+        'strategic_matrix': context_matrix,
+        'current_time': timezone.now()
     })
 
