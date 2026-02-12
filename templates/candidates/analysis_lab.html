@@ -4,16 +4,27 @@
 
 {% block extra_css %}
 <style>
+    /* Global Lab Styles */
+    .lab-container { position: relative; min-height: 100vh; padding-bottom: 3rem; }
+    .grid-overlay {
+        position: fixed; inset: 0; 
+        background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 50px 50px;
+        z-index: -1; pointer-events: none;
+    }
+
     .lab-grid {
         display: grid;
-        grid-template-columns: 400px 1fr;
-        gap: 4rem;
+        grid-template-columns: 380px 1fr;
+        gap: 3rem;
         align-items: start;
+        margin-top: 3rem;
     }
 
     @media (max-width: 1200px) {
         .lab-grid { grid-template-columns: 1fr; gap: 3rem; }
-        .ingestion-panel { position: relative; top: 0; }
+        .ingestion-panel { position: relative; top: 0; z-index: 2; }
         .lab-hub { min-height: 600px; }
     }
 
@@ -28,12 +39,23 @@
 
     /* Ingestion Section */
     .ingestion-panel {
-        padding: 3rem;
-        background: var(--bg-surface);
+        padding: 3rem 2rem;
+        background: rgba(10, 14, 25, 0.6);
+        border: 1px solid var(--glass-border);
         border-radius: var(--radius-xl);
         position: sticky;
         top: calc(var(--nav-height) + 2rem);
+        backdrop-filter: blur(20px);
     }
+    
+    /* Tech Accents for Ingestion */
+    .corner-accent { position: absolute; width: 10px; height: 10px; border-color: var(--primary); border-style: solid; opacity: 0.5; transition: 0.3s; }
+    .ingestion-panel:hover .corner-accent { opacity: 1; border-color: var(--accent); }
+    
+    .top-left { top: 0; left: 0; border-width: 2px 0 0 2px; border-top-left-radius: 12px; }
+    .top-right { top: 0; right: 0; border-width: 2px 2px 0 0; border-top-right-radius: 12px; }
+    .bottom-left { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-bottom-left-radius: 12px; }
+    .bottom-right { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-bottom-right-radius: 12px; }
 
     .slot-group {
         display: flex;
@@ -44,13 +66,14 @@
 
     .upload-slot {
         background: rgba(0, 0, 0, 0.2);
-        border: 2px dashed var(--glass-border);
+        border: 1px dashed var(--glass-border);
         padding: 2.5rem 1.5rem;
         border-radius: var(--radius-lg);
         text-align: center;
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
+        overflow: hidden;
     }
 
     .upload-slot:hover {
@@ -98,21 +121,26 @@
         transition: all 0.3s;
         border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
+    
+    .candidate-item span { color: var(--text-muted); transition: 0.3s; }
+    .candidate-item:hover span { color: white; }
+    .candidate-item input:checked + span { color: var(--primary); font-weight: 800; }
 
     .candidate-item:hover {
-        background: var(--glass-white);
+        background: var(--glass-highlight);
     }
 
     /* Lab Hub Styling */
     .lab-hub {
         min-height: 750px;
-        background: var(--bg-card);
+        background: rgba(10, 14, 25, 0.6);
         border: 1px solid var(--glass-border);
         border-radius: var(--radius-xl);
         display: flex;
         flex-direction: column;
         overflow: hidden;
         backdrop-filter: blur(20px);
+        position: relative;
     }
 
     .report-display {
@@ -126,7 +154,8 @@
         background: rgba(0, 0, 0, 0.2);
         padding: 3rem;
         border-radius: var(--radius-lg);
-        border: 1px solid var(--glass-border);
+        border-left: 1px solid var(--glass-border);
+        border-top: 1px solid var(--glass-border);
         line-height: 2;
         font-size: 1.1rem;
         color: #e2e8f0;
@@ -134,9 +163,11 @@
 
     /* Lab Chat */
     .analyst-chat {
-        background: rgba(5, 7, 10, 0.6);
+        background: rgba(5, 7, 10, 0.8);
         border-top: 1px solid var(--glass-border);
         padding: 2.5rem;
+        position: relative;
+        z-index: 10;
     }
 
     .chat-header {
@@ -174,7 +205,7 @@
 
     .msg-user {
         align-self: flex-end;
-        background: var(--primary);
+        background: linear-gradient(135deg, var(--primary), #3b82f6);
         color: white;
         border-bottom-right-radius: 4px;
         box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
@@ -231,32 +262,60 @@
     }
 
     .pulse-ring {
-        width: 80px; height: 80px;
-        border: 4px solid var(--primary);
+        width: 100px; height: 100px;
+        border: 2px solid var(--primary);
         border-radius: 50%;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .pulse-ring::before {
+        content: ''; position: absolute; width: 100%; height: 100%;
+        border-radius: 50%; border: 4px solid var(--primary);
         animation: ringPulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+        opacity: 0;
+    }
+    
+    .pulse-ring::after {
+        content: '🤖'; font-size: 2rem;
     }
 
     @keyframes ringPulse {
-        0% { transform: scale(0.8); opacity: 1; box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-        70% { transform: scale(1.2); opacity: 0; box-shadow: 0 0 0 40px rgba(99, 102, 241, 0); }
-        100% { transform: scale(0.8); opacity: 0; }
+        0% { transform: scale(0.8); opacity: 1; border-width: 4px; }
+        100% { transform: scale(1.5); opacity: 0; border-width: 0px; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="reveal">
-    <div style="text-align: center; margin-bottom: 6rem;">
-        <div class="badge badge-indigo" style="margin-bottom: 1.5rem;">SECURE RESEARCH FACILITY</div>
-        <h1 class="gradient-text">Ghosada Intelligence Lab</h1>
-        <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto;">Execute isolated multi-document synthesis and strategic cross-referencing in real-time.</p>
+<div class="reveal lab-container">
+    <div class="grid-overlay"></div>
+    
+    <div style="text-align: center; margin-bottom: 4rem; position: relative;">
+        <div class="badge badge-indigo" style="margin-bottom: 1.5rem; letter-spacing: 3px; border-color: rgba(99, 102, 241, 0.4);">
+            <span style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%; display: inline-block;"></span>
+            SECURE RESEARCH FACILITY
+        </div>
+        <h1 class="gradient-text" style="font-size: 3.5rem; text-transform: uppercase; letter-spacing: -1px; margin-bottom: 1rem;">Ghosada Intelligence Lab</h1>
+        <p style="color: var(--text-muted); font-size: 1.15rem; max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            Execute isolated multi-document synthesis and strategic cross-referencing in real-time using <span style="color: white; font-weight: 700;">Zero-Trust Architecture</span>.
+        </p>
     </div>
 
     <div class="lab-grid">
         <!-- Ingestion Panel -->
         <div class="premium-card ingestion-panel">
-            <h3 class="section-label">1. Primary Data Inputs</h3>
+            <div class="corner-accent top-left"></div>
+            <div class="corner-accent top-right"></div>
+            <div class="corner-accent bottom-left"></div>
+            <div class="corner-accent bottom-right"></div>
+
+            <h3 class="section-label" style="display: flex; justify-content: space-between;">
+                1. Primary Data Inputs
+                <span style="color: var(--accent);">● LIVE</span>
+            </h3>
             
             <form id="labIngestForm" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -267,7 +326,7 @@
                         {% for candidate in candidates %}
                             <label class="candidate-item">
                                 <input type="checkbox" name="selected_candidates" value="{{ candidate.id }}" onchange="updateLabStatus()">
-                                <span style="font-size: 0.9rem; font-weight: 600;">{{ candidate.name }}</span>
+                                <span style="font-size: 0.9rem; font-weight: 600; margin-left: 10px;">{{ candidate.name }}</span>
                             </label>
                         {% empty %}
                             <p style="font-size: 0.8rem; opacity: 0.5; padding: 1rem; text-align: center;">No assets found.</p>
@@ -309,7 +368,7 @@
                 <h3 class="section-label">Stored Intelligence Archive</h3>
                 <div style="display: flex; flex-direction: column; gap: 1rem; max-height: 200px; overflow-y: auto; padding-right: 0.5rem;">
                     {% for archive in previous_analyses %}
-                        <div class="glass-card" style="padding: 1rem; border-radius: 12px; font-size: 0.8rem; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; gap: 5px;">
+                        <div class="glass-card" style="padding: 1rem; border-radius: 12px; font-size: 0.8rem; background: rgba(255,255,255,0.02); display: flex; flex-direction: column; gap: 5px; cursor: pointer; transition: 0.2s;">
                             <div style="font-weight: 800; color: white;">{{ archive.title }}</div>
                             <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-dim); font-size: 0.7rem;">
                                 <span>{{ archive.created_at|date:"M d, Y" }}</span>
@@ -325,6 +384,11 @@
 
         <!-- Research Hub (Output) -->
         <div class="lab-hub">
+            <div class="corner-accent top-left"></div>
+            <div class="corner-accent top-right"></div>
+            <div class="corner-accent bottom-left"></div>
+            <div class="corner-accent bottom-right"></div>
+
             {% if not analysis_result %}
                 <div id="labPlaceholder" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4rem;">
                     <div style="font-size: 5rem; margin-bottom: 2rem; opacity: 0.05; filter: grayscale(1);">🧬</div>
@@ -334,7 +398,7 @@
                 
                 <div id="labLoader" class="research-loader">
                     <div class="pulse-ring"></div>
-                    <div style="text-align: center;">
+                    <div style="text-align: center; margin-top: 2rem;">
                         <p style="color: var(--primary); font-weight: 800; letter-spacing: 4px; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 0.5rem;">Isolated Synthesis Active</p>
                         <p style="color: var(--text-dim); font-size: 0.75rem;">Cross-referencing ghosada patterns...</p>
                     </div>
@@ -342,7 +406,7 @@
             {% else %}
                 <div class="report-display reveal">
                     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 3rem;">
-                        <div class="status-dot accent"></div>
+                        <div class="status-dot accent" style="background: var(--accent); box-shadow: 0 0 10px var(--accent);"></div>
                         <h2 style="margin: 0; font-size: 1.8rem;">Integrated Laboratory Report</h2>
                     </div>
                     
@@ -468,4 +532,5 @@
 
     function handleLabEnter(e) { if(e.key === 'Enter') executeLabSearch(); }
 </script>
+{% endblock %}
 {% endblock %}
