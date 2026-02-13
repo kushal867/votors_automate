@@ -96,7 +96,7 @@
                     
                     <!-- Province Indicators -->
                     {% for p_code, p_name in provinces %}
-                    <g class="map-target" title="{{ p_name }}">
+                    <g class="map-target" title="{{ p_name }}" onclick="window.location.href='{% url 'candidate-list' %}?province={{ p_code }}'" style="cursor: pointer;">
                         <!-- Use a dynamic pulse if there are candidates in this province -->
                         <circle cx="{% if p_code == '7' %}120{% elif p_code == '6' %}250{% elif p_code == '5' %}350{% elif p_code == '4' %}450{% elif p_code == '3' %}550{% elif p_code == '2' %}650{% else %}720{% endif %}" 
                                 cy="{% if p_code == '7' %}220{% elif p_code == '6' %}200{% elif p_code == '5' %}300{% elif p_code == '4' %}180{% elif p_code == '3' %}220{% elif p_code == '2' %}320{% else %}220{% endif %}" 
@@ -190,7 +190,7 @@
                     <div class="box-title" style="font-size: 0.65rem; margin-bottom: 1rem;">Neural Hotspots (Trending)</div>
                     <div style="display: flex; flex-wrap: wrap; gap: 0.6rem;">
                         {% for topic in trending_topics %}
-                            <span class="badge-pill" style="background: rgba(255, 204, 0, 0.05); color: var(--gold); font-size: 0.7rem; border: 1px solid rgba(255, 204, 0, 0.2); padding: 4px 12px;">#{{ topic }}</span>
+                            <a href="{% url 'global-search' %}?q={{ topic }}" class="badge-pill" style="background: rgba(255, 204, 0, 0.05); color: var(--gold); font-size: 0.7rem; border: 1px solid rgba(255, 204, 0, 0.2); padding: 4px 12px; text-decoration: none; transition: 0.3s; display: inline-block;">#{{ topic }}</a>
                         {% empty %}
                             <span style="color: var(--text-dim); font-size: 0.7rem;">Monitoring network...</span>
                         {% endfor %}

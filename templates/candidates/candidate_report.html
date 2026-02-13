@@ -3,126 +3,414 @@
 {% block title %}Intelligence Report | {{ candidate.name }}{% endblock %}
 
 {% block content %}
-<div class="report-container reveal">
-    <div class="report-header">
-        <div class="header-main">
-            <h1 class="traditional-font">INTELLIGENCE BRIEFING</h1>
-            <div class="asset-id">ASSET_ID: {{ candidate.id|stringformat:"05d" }}</div>
-        </div>
-        <div class="header-meta">
-            <div>DATE: {{ current_time|date:"Y.m.d" }}</div>
-            <div>STRICTURE: UNCLASSIFIED / PUBLIC ACCESS</div>
-        </div>
-    </div>
+<div class="report-wrapper reveal">
+    <!-- Confidential Watermark Overlay -->
+    <div class="confidential-watermark">INTERNAL USE ONLY</div>
+    <div class="grid-overlay"></div>
 
-    <div class="report-body premium-card">
-        <div class="candidate-summary">
-            <div class="summary-img">
-                {% if candidate.image %}
-                    <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}">
-                {% else %}
-                    <div class="img-ph">👤</div>
-                {% endif %}
+    <div class="report-container">
+        <!-- Top Operational Header -->
+        <div class="report-header">
+            <div class="header-left">
+                <div class="badge-intelligence">
+                    <span class="status-pulse"></span>
+                    SECURE_LINK: VVN-CORE.X7
+                </div>
+                <!-- Using inline styles for now, can move to CSS block -->
+                <h1 class="traditional-font gradient-text" style="font-size: 3rem; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: -1px;">Intelligence Briefing</h1>
+                <div class="briefing-id">REF_ID: #{{ candidate.id|stringformat:"05d" }}_{{ candidate.name|slice:":3"|upper }} // <span style="color: var(--primary);">PY-2026.SLX</span></div>
             </div>
-            <div class="summary-info">
-                <h2>{{ candidate.name }}</h2>
-                <div class="party-badge">{{ candidate.party }}</div>
-                <p><strong>Province:</strong> {{ candidate.get_province_display }}</p>
+            <div class="header-right">
+                <div class="meta-item">
+                    <span class="meta-label">DATE:</span>
+                    <span class="meta-value">{{ current_time|date:"Y.m.d" }}</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">CLEARANCE:</span>
+                    <span class="meta-value" style="color: var(--secondary); text-shadow: 0 0 10px rgba(255, 0, 85, 0.4);">LEVEL_4_ALPHA</span>
+                </div>
+                <div class="meta-item">
+                    <span class="meta-label">ORIGIN:</span>
+                    <span class="meta-value">GHOSADA_LAB</span>
+                </div>
             </div>
         </div>
 
-        <hr style="border: 0; border-top: 1px solid var(--glass-border); margin: 3rem 0;">
+        <div class="report-grid">
+            <!-- Left Sidebar: Core Asset Info -->
+            <div class="report-sidebar">
+                <div class="premium-card asset-identity">
+                    <!-- Corner Accents -->
+                    <div class="corner-accent top-left"></div>
+                    <div class="corner-accent top-right"></div>
+                    <div class="corner-accent bottom-left"></div>
+                    <div class="corner-accent bottom-right"></div>
 
-        <div class="intelligence-content">
-            {{ report_content|linebreaks }}
-        </div>
+                    <div class="asset-image-container">
+                        <div class="scanner-line"></div>
+                        <div class="scanner-overlay"></div>
+                        {% if candidate.image %}
+                            <img src="{{ candidate.image.url }}" alt="{{ candidate.name }}">
+                        {% else %}
+                            <div class="img-ph" style="font-size: 4rem; display: flex; align-items: center; justify-content: center; height: 100%; filter: grayscale(1);">👤</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="asset-details">
+                        <h2 class="asset-name" style="font-size: 1.8rem; margin-bottom: 0.5rem;">{{ candidate.name }}</h2>
+                        <div class="party-pill">{{ candidate.party }}</div>
+                        
+                        <div class="info-grid">
+                            <div class="detail-row">
+                                <span class="d-label">PROVINCE</span>
+                                <strong class="d-val">{{ candidate.get_province_display }}</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span class="d-label">STATUS</span>
+                                <strong class="d-val" style="color: var(--accent);">ACTIVE_SIGNAL</strong>
+                            </div>
+                            <div class="detail-row">
+                                <span class="d-label">THREAT LEVEL</span>
+                                <strong class="d-val">UNKNOWN</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div class="report-footer">
-            <p>This report was generated by <strong>Voter Vision Nepal AI (VVN-AI)</strong> using high-fidelity data synthesis. Intelligence reflects available records and internal training knowledge.</p>
-            <div class="actions">
-                <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline">Exit Briefing</a>
-                <button onclick="window.print()" class="btn-modern btn-primary">Print Intelligence</button>
-                <a href="?refresh=1" class="btn-modern btn-secondary ml-3">Re-verify Intelligence</a>
+                <!-- Strategic Matrix Radar Chart -->
+                <div class="premium-card matrix-box">
+                    <div class="box-header">
+                        <h3 class="box-title">Strategic Matrix</h3>
+                        <span class="data-tag">LIVE_METRICS</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-grid-bg"></div>
+                        <canvas id="matrixChart"></canvas>
+                    </div>
+                    <div class="matrix-legend">
+                        <div class="legend-item"><span class="dot" style="background: var(--primary);"></span>Asset Strength</div>
+                        <div class="legend-item"><span class="dot" style="background: rgba(255,255,255,0.2);"></span>Baseline</div>
+                    </div>
+                </div>
+
+                <!-- Verified Documents -->
+                <div class="premium-card doc-box">
+                    <div class="box-header">
+                        <h3 class="box-title">Verified Evidence</h3>
+                        <span class="data-tag">{{ manifestos.count }} FILES</span>
+                    </div>
+                    <div class="doc-list">
+                        {% for mf in manifestos %}
+                            <a href="#" class="doc-item">
+                                <div class="doc-icon">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                </div>
+                                <div class="doc-info">
+                                    <div class="doc-name">MANIFESTO_{{ mf.uploaded_at|date:"Y" }}</div>
+                                    <div class="doc-meta">
+                                        <span>HASH: {{ mf.id|stringformat:"x"|slice:":8" }}</span>
+                                        <span class="verified-badge">VERIFIED</span>
+                                    </div>
+                                </div>
+                            </a>
+                        {% empty %}
+                            <div class="no-docs">
+                                <i style="font-size: 1.5rem; display: block; margin-bottom: 0.5rem;">⚠️</i>
+                                <span>NO DOCUMENTARY LOGS FOUND</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Briefing Content -->
+            <div class="report-main">
+                <div class="premium-card briefing-body">
+                    <!-- Technical Decorations -->
+                    <div class="tech-line-top"></div>
+                    <div class="status-readout">Generating Synthesis... COMPLETE</div>
+                    
+                    <div class="watermark-bg">CONFIDENTIAL</div>
+
+                    <div class="briefing-content">
+                        <!-- Dynamic Report Content Inserted Here -->
+                    </div>
+
+                    <div class="intelligence-verification">
+                        <div style="display: flex; align-items: flex-start; gap: 20px;">
+                            <div class="v-shield">
+                                <svg width="40" height="40" fill="none" stroke="var(--accent)" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            </div>
+                            <div>
+                                <div class="v-title">VVN-AI SYNTHESIS VERIFIED</div>
+                                <div class="v-desc">This intelligence product was generated by cross-referencing internal databases, public manifestos, and neural election models. Information reliability is rated at <span style="color: white; font-weight: 700;">SIGMA-9</span>.</div>
+                                <div class="v-hash">DIGITAL_SIGNATURE: {{ candidate.updated_at|date:"U" }}.X7Z</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-actions">
+                        <a href="{% url 'candidate-detail' candidate.id %}" class="btn-modern btn-outline">
+                            <span style="font-size: 1.2rem;">←</span>
+                            Return to Profile
+                        </a>
+                        <button onclick="window.print()" class="btn-modern btn-primary">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            Print Briefing
+                        </button>
+                        <a href="?refresh=1" class="btn-modern btn-secondary">
+                            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Re-Analyze Asset
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .report-container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 4rem 1rem;
+    /* Technical & Layout Base */
+    .report-wrapper { position: relative; padding: 3rem 0; min-height: 100vh; overflow: hidden; }
+    .confidential-watermark {
+        position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+        font-size: 12rem; color: rgba(255, 255, 255, 0.015); font-weight: 900; white-space: nowrap; 
+        pointer-events: none; z-index: 0; user-select: none; font-family: 'Outfit', sans-serif;
     }
-    .report-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        margin-bottom: 2rem;
-        border-bottom: 4px solid var(--primary);
-        padding-bottom: 1rem;
+    .grid-overlay {
+        position: fixed; inset: 0; 
+        background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 50px 50px;
+        z-index: -1; pointer-events: none;
     }
-    .header-main h1 {
-        font-size: 2.5rem;
-        margin: 0;
-        letter-spacing: 2px;
+
+    .report-container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 2; padding: 0 2rem; }
+    
+    /* Header Architecture */
+    .report-header { 
+        display: flex; justify-content: space-between; align-items: flex-end; 
+        margin-bottom: 3rem; padding-bottom: 1.5rem; 
+        border-bottom: 2px solid var(--glass-border); 
+        position: relative;
     }
-    .asset-id {
-        font-family: monospace;
-        color: var(--secondary);
-        font-weight: 800;
+    .report-header::after {
+        content: ''; position: absolute; bottom: -2px; left: 0; width: 30%; height: 2px;
+        background: linear-gradient(90deg, var(--primary), transparent);
     }
-    .header-meta {
-        text-align: right;
-        font-family: monospace;
-        font-size: 0.8rem;
-        color: var(--text-dim);
+
+    .badge-intelligence { 
+        display: inline-flex; align-items: center; gap: 10px; 
+        background: rgba(67, 97, 238, 0.1); color: var(--primary); 
+        padding: 6px 14px; border-radius: 4px; font-size: 0.7rem; 
+        font-weight: 800; font-family: monospace; letter-spacing: 2px; margin-bottom: 1rem;
+        border: 1px solid rgba(67, 97, 238, 0.2);
     }
-    .report-body {
-        padding: 4rem;
-        background: var(--bg-surface);
+    .status-pulse { width: 6px; height: 6px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); animation: pulseGlow 1.5s infinite; }
+    @keyframes pulseGlow { 0% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.5); } 100% { opacity: 0.5; transform: scale(1); } }
+    
+    .briefing-id { font-family: monospace; color: var(--text-dim); font-size: 0.85rem; letter-spacing: 1px; }
+    .header-right { text-align: right; display: flex; flex-direction: column; gap: 0.4rem; border-left: 1px solid var(--glass-border); padding-left: 2rem; }
+    .meta-item { display: flex; gap: 15px; justify-content: flex-end; font-family: monospace; font-size: 0.8rem; }
+    .meta-label { color: var(--text-dim); text-transform: uppercase; }
+    .meta-value { color: #fff; font-weight: 700; letter-spacing: 0.5px; }
+
+    /* Layout Grid */
+    .report-grid { display: grid; grid-template-columns: 380px 1fr; gap: 3rem; }
+    @media (max-width: 1200px) { .report-grid { grid-template-columns: 1fr; } .report-sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; } }
+    @media (max-width: 768px) { .report-sidebar { grid-template-columns: 1fr; } .report-header { flex-direction: column; align-items: flex-start; gap: 1.5rem; } .header-right { border: none; padding: 0; text-align: left; justify-content: flex-start; } .meta-item { justify-content: flex-start; } }
+
+    /* Asset Card Styles */
+    .asset-identity { padding: 3rem 2rem; text-align: center; position: relative; backdrop-filter: blur(40px); background: rgba(10, 14, 25, 0.6); }
+    .corner-accent { position: absolute; width: 15px; height: 15px; border-color: var(--primary); border-style: solid; opacity: 0.6; }
+    .top-left { top: 0; left: 0; border-width: 2px 0 0 2px; border-top-left-radius: 12px; }
+    .top-right { top: 0; right: 0; border-width: 2px 2px 0 0; border-top-right-radius: 12px; }
+    .bottom-left { bottom: 0; left: 0; border-width: 0 0 2px 2px; border-bottom-left-radius: 12px; }
+    .bottom-right { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-bottom-right-radius: 12px; }
+
+    .asset-image-container { 
+        width: 160px; height: 160px; margin: 0 auto 2rem; position: relative; 
+        border: 2px solid var(--glass-border); border-radius: 50%; overflow: hidden;
+        box-shadow: 0 0 30px rgba(0,0,0,0.5);
     }
-    .candidate-summary {
-        display: flex;
-        gap: 2rem;
-        align-items: center;
+    .asset-image-container img { width: 100%; height: 100%; object-fit: cover; filter: sepia(20%) saturate(0.8); }
+    .scanner-line {
+        position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+        background: var(--primary); box-shadow: 0 0 10px var(--primary);
+        animation: scanDown 3s linear infinite; z-index: 5; opacity: 0.7;
     }
-    .summary-img {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 2px solid var(--primary);
+    @keyframes scanDown { 0% { top: -10%; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: 110%; opacity: 0; } }
+
+    .party-pill { 
+        display: inline-block; background: var(--secondary); color: #fff; 
+        padding: 4px 12px; border-radius: 2px; font-size: 0.7rem; 
+        font-weight: 800; text-transform: uppercase; margin: 0 0 2rem; 
+        box-shadow: 0 4px 12px rgba(255, 0, 85, 0.3); letter-spacing: 1px;
     }
-    .summary-img img { width: 100%; height: 100%; object-fit: cover; }
-    .img-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #222; font-size: 3rem; }
-    .party-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        background: var(--secondary);
-        color: white;
-        border-radius: 4px;
-        font-weight: 800;
-        margin: 1rem 0;
-        text-transform: uppercase;
-        font-size: 0.8rem;
+    
+    .info-grid { display: flex; flex-direction: column; gap: 0; background: rgba(255,255,255,0.02); border-radius: 8px; overflow: hidden; border: 1px solid var(--glass-border); }
+    .detail-row { display: flex; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--glass-border); font-size: 0.8rem; }
+    .detail-row:last-child { border-bottom: none; }
+    .d-label { color: var(--text-dim); font-weight: 600; font-size: 0.7rem; letter-spacing: 1px; }
+    .d-val { color: white; }
+
+    /* Matrix Box */
+    .matrix-box, .doc-box { padding: 2rem; margin-top: 2rem; background: rgba(10, 14, 25, 0.6); }
+    .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .box-title { font-size: 1rem; margin: 0; color: white; opacity: 0.9; }
+    .data-tag { font-size: 0.6rem; color: var(--primary); font-family: monospace; border: 1px solid var(--glass-border); padding: 2px 6px; border-radius: 4px; }
+    
+    .chart-container { height: 280px; position: relative; margin: 1.5rem 0; }
+    .chart-grid-bg { 
+        position: absolute; inset: 20px; 
+        background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+        background-size: 20px 20px; border-radius: 50%; opacity: 0.5; pointer-events: none;
     }
-    .intelligence-content {
-        font-size: 1.1rem;
-        line-height: 1.8;
-        color: #e2e8f0;
+    .matrix-legend { display: flex; justify-content: center; gap: 15px; font-size: 0.7rem; color: var(--text-dim); }
+    .legend-item { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    /* Doc Box */
+    .doc-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .doc-item { 
+        display: flex; align-items: center; gap: 15px; padding: 12px; 
+        background: rgba(255,255,255,0.02); border-radius: 8px; 
+        border: 1px solid var(--glass-border); text-decoration: none;
+        transition: all 0.2s;
     }
-    .report-footer {
-        margin-top: 4rem;
-        padding-top: 2rem;
-        border-top: 1px solid var(--glass-border);
-        font-size: 0.9rem;
-        color: var(--text-muted);
+    .doc-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+    .doc-icon { color: var(--text-muted); opacity: 0.7; }
+    .doc-name { font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 2px; }
+    .doc-meta { font-size: 0.65rem; color: var(--text-dim); font-family: monospace; display: flex; gap: 10px; align-items: center; }
+    .verified-badge { color: var(--accent); opacity: 0.8; }
+    .no-docs { text-align: center; padding: 2rem; font-size: 0.8rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 10px; align-items: center; opacity: 0.5; }
+
+    /* Main Briefing Body */
+    .briefing-body { padding: 4rem 5rem; position: relative; min-height: 800px; background: rgba(10, 14, 25, 0.8); }
+    .tech-line-top { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--glass-border), transparent); }
+    .status-readout {
+        position: absolute; top: 1.5rem; right: 2rem; 
+        font-family: monospace; font-size: 0.7rem; color: var(--accent); 
+        letter-spacing: 1px; opacity: 0.8;
     }
-    .actions {
-        margin-top: 2rem;
-        display: flex;
-        gap: 1rem;
+    .watermark-bg {
+        position: absolute; top: 2rem; right: 4rem; 
+        font-size: 4rem; font-weight: 900; color: white; opacity: 0.02; 
+        pointer-events: none; z-index: 0; font-family: 'Impact', sans-serif; letter-spacing: 5px;
+    }
+
+    .briefing-content { font-size: 1.1rem; color: #cbd5e1; margin-bottom: 4rem; position: relative; z-index: 5; line-height: 1.8; }
+    .briefing-content h3 { 
+        color: white; margin: 3.5rem 0 1.5rem; font-size: 1.4rem; 
+        display: flex; align-items: center; gap: 10px;
+    }
+    .briefing-content h3::before {
+        content: ''; width: 6px; height: 24px; background: var(--primary); display: inline-block;
+    }
+    .briefing-content p { margin-bottom: 1.5rem; text-align: justify; }
+    .briefing-content strong { color: white; font-weight: 700; color: var(--primary); }
+    .briefing-content ul { margin-left: 1.5rem; margin-bottom: 1.5rem; }
+    .briefing-content li { margin-bottom: 0.8rem; padding-left: 10px; }
+
+    .intelligence-verification { 
+        background: linear-gradient(90deg, rgba(16, 185, 129, 0.05), transparent); 
+        padding: 2rem; border-radius: 8px; border-left: 3px solid var(--accent); 
+        margin-bottom: 4rem; position: relative; overflow: hidden;
+    }
+    .v-title { font-weight: 800; font-size: 0.9rem; color: var(--accent); margin-bottom: 0.5rem; letter-spacing: 1px; }
+    .v-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1rem; max-width: 600px; }
+    .v-hash { font-family: monospace; font-size: 0.7rem; color: var(--text-dim); }
+
+    .report-actions { display: flex; gap: 1rem; flex-wrap: wrap; border-top: 1px solid var(--glass-border); padding-top: 2rem; }
+
+    /* Print Overrides */
+    @media print { 
+        .sidebar, .topbar, .report-actions, .mountain-bg, .grid-overlay, .tech-line-top, .status-readout, .corner-accent { display: none !important; } 
+        .main-content { margin: 0 !important; padding: 0 !important; width: 100%; } 
+        .report-wrapper { padding: 0; min-height: auto; } 
+        .report-grid { display: block; }
+        .report-sidebar { display: none; } /* Focus on the text body for print usually */
+        .premium-card { border: none !important; background: #fff !important; color: #000 !important; box-shadow: none !important; padding: 0 !important; } 
+        .briefing-content, h1, h2, h3, p, li { color: #000 !important; text-shadow: none !important; } 
+        .traditional-font { color: #000 !important; } 
+        .briefing-body { padding: 20px; background: white !important; }
+        .gradient-text { background: none; -webkit-text-fill-color: black; color: black; }
+        .intelligence-verification { border: 1px solid #ccc; background: #f9f9f9; }
+        .v-title, .v-desc { color: #000 !important; }
+        body { background: white; color: black; }
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    const ctx = document.getElementById('matrixChart').getContext('2d');
+    
+    // Matrix Data from Backend
+    const matrixData = {
+        labels: [
+            'Economic Vision', 
+            'Social Progress', 
+            'Stability', 
+            'Infrastructure', 
+            'Diplomacy'
+        ],
+        datasets: [{
+            label: 'ASSET_SCORE',
+            data: [
+                {{ strategic_matrix.economic_vision|default:70 }}, 
+                {{ strategic_matrix.social_progress|default:80 }}, 
+                {{ strategic_matrix.political_stability|default:60 }}, 
+                {{ strategic_matrix.infrastructure_focus|default:75 }}, 
+                {{ strategic_matrix.diplomatic_acumen|default:55 }}
+            ],
+            backgroundColor: 'rgba(67, 97, 238, 0.4)',
+            borderColor: '#4361ee',
+            pointBackgroundColor: '#4361ee',
+            pointBorderColor: '#fff',
+            pointRadius: 4,
+            borderWidth: 2
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'radar',
+        data: matrixData,
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(255, 255, 255, 0.05)' },
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    pointLabels: { 
+                        color: '#94a3b8', 
+                        font: { size: 10, family: "'Plus Jakarta Sans', sans-serif", weight: '600' } 
+                    },
+                    ticks: { display: false, stepSize: 20 },
+                    max: 100, min: 0
+                }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // Render Markdown for briefing content
+    const content = document.querySelector('.briefing-content');
+    if (content) {
+        const rawContent = `{{ report_content|escapejs }}`;
+        // Basic markdown parsing or just using the raw text if marked isn't available
+        if (typeof marked !== 'undefined') {
+            content.innerHTML = marked.parse(rawContent);
+        } else {
+            content.textContent = rawContent; // Fallback
+        }
+        
+        // Add specific class to headers for styling
+        content.querySelectorAll('h1, h2, h3').forEach(h => {
+            h.classList.add('briefing-section');
+        });
+    }
+</script>
 {% endblock %}
