@@ -1,6 +1,6 @@
-from .models import Candidate, Manifesto
 from .utils import web_search, get_chatbot_response, parse_structured_response
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,8 @@ def get_relevant_context(user_query):
     relevant_candidates = []
     
     for c in candidates:
-        if c.name.lower() in query_lower:
+        # Use regex with word boundaries to avoid partial matches (e.g. 'Ali' in 'Validity')
+        if re.search(r'\b' + re.escape(c.name.lower()) + r'\b', query_lower):
             relevant_candidates.append(c)
 
     context_parts = []

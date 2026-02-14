@@ -17,7 +17,8 @@ from .utils import (
     get_chatbot_response,
     get_ai_response,
     analyze_multiple_manifestos,
-    calculate_sentiment
+    calculate_sentiment,
+    parse_structured_response
 )
 from .services import get_relevant_context, process_manifesto_upload
 from .analytics import (
@@ -295,7 +296,7 @@ def analysis_lab(request):
                 query=user_query, 
                 response=response, 
                 sentiment_score=sentiment,
-                source='Ghosada Lab Chat'
+                source='Ghoshana Lab Chat'
             )
 
             return JsonResponse({'status': 'success', 'response': response})
@@ -462,7 +463,7 @@ def candidate_report_view(request, pk):
         raw_response = get_ai_response(prompt, system_instruction="You are a Lead Intelligence Analyst for Voter Vision Nepal.")
         
         # Parse the JSON out of the response if it exists
-        from .utils import parse_structured_response
+        # Parse the JSON out of the response if it exists
         matrix_data = parse_structured_response(raw_response)
         
         # Clean the response for display (remove the JSON block)
