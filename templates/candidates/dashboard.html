@@ -446,10 +446,10 @@
     new Chart(ctxFlow, {
         type: 'line',
         data: {
-            labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+            labels: ['24h ago', '20h ago', '16h ago', '12h ago', '8h ago', '4h ago', 'Now'],
             datasets: [{
                 label: 'Flow Index',
-                data: [30, 45, 35, 70, 55, 85, 90], // Real-time flow mock
+                data: {{ flow_data|safe }},
                 borderColor: colors.primary,
                 borderWidth: 3,
                 fill: true,
